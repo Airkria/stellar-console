@@ -23,8 +23,8 @@ export function createBlackHole(app, S, refs) {
     uniforms.uCamRight.value = new THREE.Vector3(1, 0, 0);
     uniforms.uCamUp.value = new THREE.Vector3(0, 1, 0);
     uniforms.uCamFwd.value = new THREE.Vector3(0, 0, -1);
-    uniforms.uFlowMap.value = makeFlowTexture(256);
-    uniforms.uFlowMap2.value = makeFlowTexture(256);
+    uniforms.uFlowMap.value = makeFlowTexture(512);
+    uniforms.uFlowMap2.value = makeFlowTexture(512);
     uniforms.uResolution.value = new THREE.Vector2(S.VW, S.VH);
 
     refs.bhPass = new ShaderPass(blackHoleShader);
