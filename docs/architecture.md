@@ -66,7 +66,9 @@ UnrealBloomPass                    辉光（低画质时跳过）
 | 动作 | 路径 |
 | --- | --- |
 | 悬停星体 | `stars.js` → `state.hovered` → `setFocus()` |
-| 点击星体 | `stars.js` / `scene.js` 的 pointerup 兜底 → `console.open()` |
+| 点击星体 | `stars.js` / `scene.js` 的 pointerup 兜底 → `activateProject()` |
+| 第一次点击 | `selected !== id` → 选中 + 目标卡 + 引线，不打开控制台 |
+| 第二次点击 | `selected === id` → `console.open()` |
 | 点击空白 | pointerup 兜底 → 取消选中 → `target.render(null)` |
 | 选中 | `state.selected` → `target.render()` + `updateLeader()` |
 | 打开控制台 | `state.current`、`backgroundPaused=true`；控制台填充 DOM |
