@@ -126,7 +126,7 @@ check('deselected label', await evaluate('document.querySelector(".star[data-pro
 check(
   'new tune keys',
   await evaluate(
-    '["cloudDensity","flowTilingX","flowTilingY","riverSpeed","inflowSpeed","starCloudThickness","spaceGlow","bgUseImage"].every((k) => k in stellarConsole.getTune())',
+    '["cloudDensity","flowTilingX","flowTilingY","riverSpeed","galaxySpeed","inflowSpeed","starCloudThickness","starCloudDensity","starCloudDrag","spaceGlow","cssNebula","lensedSky","edgeBoost","bgUseImage"].every((k) => k in stellarConsole.getTune())',
   ),
   true,
 );

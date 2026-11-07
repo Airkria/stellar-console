@@ -24,20 +24,23 @@ URL 一次性覆盖：
 | `diskIn` | 吸积盘内径 | 2.45 | 2–4 |
 | `diskOut` | 吸积盘外径 | 11.5 | 6–14 |
 | `diskH` | 盘半厚 | 0.13 | 0.05–0.40 |
+| `edgeBoost` | 水平视角下的盘增厚倍数（0 = 关闭） | 3.0 | 0–4 |
 | `burst` | 内缘爆亮强度 | 2.8 | 0–6 |
 | `falloff` | 外盘衰减指数 | 1.30 | 0.8–2.5 |
 | `emission` | 盘亮度 | 2.2 | 0.5–4 |
 | `absorb` | 盘吸收 | 0.05 | 0–0.2 |
 | `ring` | 光子环强度 | 1.2 | 0–2 |
 | `cloudDensity` | 云层密度 / 覆盖率 | 0.55 | 0–1 |
-| `flowX` | 横向流速（绕盘方向） | 0.12 | -1–1 |
-| `flowY` | 纵向流速（外扩 / 内收） | 0.05 | -1–1 |
-| `flowTilingX` | 云层横向平铺次数 | 9.0 | 2–24 |
-| `flowTilingY` | 云层纵向平铺次数 | 1.35 | 0.3–4 |
+| `flowX` | 横向流速（绕盘方向） | 0.12 | -5–5 |
+| `flowY` | 纵向流速（外扩 / 内收） | 0.05 | -5–5 |
+| `flowTilingX` | 云层横向平铺次数 | 9.0 | 0.5–40 |
+| `flowTilingY` | 云层纵向平铺次数 | 1.35 | 0.1–8 |
 
 `flowX` 与 `flowY` 是独立的 UV 平移速度；两者比例不同会拉长 / 压扁云团，形成“拉伸”的流动感。速度为 0 时云层冻结，速度很小时也不会退化成同心细线。
 
 `rBound` 会被自动抬到 `max(rBound, diskOut + 0.35)`，避免盘超出透镜边界。
+
+`edgeBoost` 只在相机接近盘面时通过 `smoothstep(0.70, 0.98, grazing)` 生效；正面视角仍使用 `diskH`。水平视角出现“横切黑带”时，调高它可以加厚近侧盘面。
 
 ## 星盘
 
@@ -63,7 +66,9 @@ URL 一次性覆盖：
 | `starScale` | 恒星整体大小 | 1.0 |
 | `starCloudThickness` | 发光云厚度（外扩范围） | 1.0 |
 | `starCloudEdge` | 发光云边缘亮度 | 1.0 |
-| `starCloudInner` | 发光云内部 / 星体亮度 | 1.0 |
+| `starCloudInner` | 发光云内部（只抬亮光罩内部，不盖住星体） | 1.0 |
+| `starCloudDensity` | 光罩粒子密度 | 1.0 |
+| `starCloudDrag` | 光罩粒子阻力（越大越贴近表面、脉动越弱） | 1.0 |
 | `planetRipple` | 运行扩散光频率（CSS 动画时长） | 1.0 |
 | `planetHalo_<id>` | 单个项目光晕大小，按项目自动生成 | 1.0 |
 
@@ -91,6 +96,7 @@ URL 一次性覆盖：
 | `riverSize` | 外层星河粒径 | 1.0 |
 | `riverAlpha` | 外层星河亮度 | 1.0 |
 | `riverSpeed` | 外层星河独立转速 | 1.0 |
+| `galaxySpeed` | 主星盘（银河）转速 | 1.0 |
 | `deepSize` | 远景星粒径 | 1.0 |
 | `deepAlpha` | 远景星亮度 | 1.0 |
 
@@ -106,12 +112,19 @@ URL 一次性覆盖：
 
 | 键 | 类型 | 说明 | 默认 |
 | --- | --- | --- | --- |
-| `spaceGlow` | number | 背景光晕总开关：CSS 星云、星系雾面、远景星、透镜天空 | 1.0 |
+| `spaceGlow` | number | 背景光晕总开关 | 1.0 |
+| `cssNebula` | number | CSS 星云渐变（`.space::before`） | 1.0 |
+| `hazeAlpha` | number | 星系雾面 Sprite | 1.0 |
+| `galaxyAura` | number | 22 单位的星系大光晕 | 1.0 |
+| `nebulaClouds` | number | 6 个星云团 Sprite | 1.0 |
+| `lensedSky` | number | 黑洞 pass 的透镜天空与背景下限 | 1.0 |
 | `bgUseImage` | boolean | 启用图片背景；关闭后使用纯色 | `true` |
 | `bgImageUrl` | string | 背景图片地址，相对页面或绝对 URL | `./assets/bg.jpg` |
 | `bgColor` | string | 纯色背景 / 图片加载失败时的回退色 | `#03060c` |
 
 切换图片时会异步加载新纹理；关闭图片或加载失败会立即回退到 `bgColor`，同时更新 `--bg` CSS 变量与渲染器 clear color。
+
+要逐个排查远处亮光：把 `背景光晕` 保持 1，依次把 `CSS 星云` / `星系雾面` / `星系大光晕` / `星云团` / `透镜天空` 调到 0，即可定位来源；全部归零后配合纯黑背景就是纯黑。
 
 ## 皮肤
 

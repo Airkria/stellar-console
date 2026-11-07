@@ -33,6 +33,8 @@ export const blackHoleShader = {
     uFlowTilingX: { value: 9.0 },
     uFlowTilingY: { value: 1.35 },
     uSpaceGlow: { value: 1.0 },
+    uGrazing: { value: 0.3 },
+    uEdgeBoost: { value: 2.0 },
     uFlowMap: { value: null },
     uFlowMap2: { value: null },
   },
@@ -71,6 +73,8 @@ export const blackHoleShader = {
     uniform float uFlowTilingX;
     uniform float uFlowTilingY;
     uniform float uSpaceGlow;
+    uniform float uGrazing;
+    uniform float uEdgeBoost;
     uniform sampler2D uFlowMap;
     uniform sampler2D uFlowMap2;
 
@@ -128,11 +132,18 @@ export const blackHoleShader = {
       return c;
     }
 
+    float diskThickness() {
+      // Only thicken when the camera is close to the disk plane; face-on
+      // views keep the tuned thickness.
+      float g = smoothstep(0.70, 0.98, uGrazing);
+      return uDiskH * (1.0 + g * uEdgeBoost);
+    }
+
     // Smooth volumetric disk: no texture noise, so no moiré. The volume
     // (rather than a thin plane) also softens the projected near/far fold.
     float diskDensity(vec3 p) {
       float rr = length(p.xz);
-      float vert = 1.0 - abs(p.y) / uDiskH;
+      float vert = 1.0 - abs(p.y) / diskThickness();
       if (vert <= 0.0) return 0.0;
       float inner = smoothstep(uDiskIn, uDiskIn * 1.06, rr);
       float outer = 1.0 - smoothstep(uDiskOut * 0.76, uDiskOut, rr);
@@ -158,7 +169,7 @@ export const blackHoleShader = {
       float threshold = mix(0.78, 0.08, clamp(uCloudDensity, 0.0, 1.0));
       float flow = smoothstep(threshold, threshold + 0.26, n);
       float d = pow(vert, 1.6) * radial * rim;
-      d *= mix(0.04, 1.0, flow);
+      d *= mix(0.16, 1.0, flow);
       d = pow(d, uFalloff);
       // Narrow, very bright inner edge: the "burst" at the horizon.
       float burst = exp(-pow((rr - uDiskIn * 1.06) / 0.18, 2.0));
@@ -203,7 +214,7 @@ export const blackHoleShader = {
 
         float r = sqrt(r2);
         float dt = clamp(r * 0.065, 0.06, 0.95);
-        if (abs(pos.y) < uDiskH * 2.0 && r < uDiskOut * 1.18) dt = min(dt, 0.05);
+        if (abs(pos.y) < diskThickness() * 2.0 && r < uDiskOut * 1.18) dt = min(dt, 0.05);
         vec3 a = accel(pos, h2);
         vec3 halfv = vel + a * (dt * 0.5);
         vec3 next = pos + halfv * dt;

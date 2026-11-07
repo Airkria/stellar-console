@@ -199,9 +199,9 @@ export function createScene(app) {
     const now = performance.now();
 
     if (app.state.motion && !app.state.backgroundPaused) {
-      S.galaxyGroup.rotation.y += dt * 0.012;
+      S.galaxyGroup.rotation.y += dt * 0.012 * (app.tune.galaxySpeed || 0);
       if (refs.riverGroup) refs.riverGroup.rotation.y += dt * 0.004 * (app.tune.riverSpeed || 0);
-      if (refs.deepGroup) refs.deepGroup.rotation.y -= dt * 0.0022;
+      if (refs.deepGroup) refs.deepGroup.rotation.y -= dt * 0.0022 * (app.tune.riverSpeed || 0);
       if (refs.dustMaterial) refs.dustMaterial.uniforms.uTime.value = now * 0.001;
       if (refs.inflowMaterial) {
         refs.inflowTime = (refs.inflowTime || 0) + dt * (app.tune.inflowSpeed || 0);

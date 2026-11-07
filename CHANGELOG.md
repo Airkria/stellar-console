@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.4.0 — 2026-11-08
+
+- Opened the disk flow ranges: X/Y speed now -5..5, tiling 0.5..40 / 0.1..8.
+- Added `edgeBoost` and view-dependent `diskThickness()`: near edge-on views
+  thicken the near side of the disk so the black-hole shadow no longer reads as
+  a hard horizontal cut.
+- Replaced the filled star glow sprites with a Fresnel `glow-shell`: bright on
+  the silhouette, transparent in the centre. Added `starCloudDensity` and
+  `starCloudDrag`; `starCloudInner` now only lifts the shell interior.
+- Split the residual background glow into individual controls: `cssNebula`,
+  `hazeAlpha`, `galaxyAura`, `nebulaClouds`, `lensedSky`, under the `spaceGlow`
+  master.
+- The outer star river is now independent of the galaxy rotation, and the deep
+  star layer follows `riverSpeed`; added `galaxySpeed` for the main disk.
+
 ## 0.3.0 — 2026-11-07
 
 - Added independent X/Y cloud tiling (`flowTilingX` / `flowTilingY`) on top of

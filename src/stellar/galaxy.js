@@ -469,7 +469,8 @@ export function createGalaxy({ scene, galaxyGroup, starTexture, refs }) {
     points.renderOrder = 1;
     refs.riverGroup = new THREE.Group();
     refs.riverGroup.add(points);
-    galaxyGroup.add(refs.riverGroup);
+    // Independent of galaxyGroup so riverSpeed = 0 really freezes the halo.
+    scene.add(refs.riverGroup);
   }
 
   function buildGalaxyAura() {

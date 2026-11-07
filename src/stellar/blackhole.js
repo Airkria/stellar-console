@@ -123,6 +123,8 @@ export function createBlackHole(app, S, refs) {
     u.uTanHalfFov.value = Math.tan(THREE.MathUtils.degToRad(S.camera.fov * 0.5));
     u.uAspect.value = S.camera.aspect;
     u.uResolution.value.set(S.VW * S.DPR, S.VH * S.DPR);
+    const camLen = Math.max(0.001, S.camera.position.length());
+    u.uGrazing.value = 1 - Math.min(1, Math.abs(S.camera.position.y) / camLen);
     if (app.state.motion && !app.state.backgroundPaused) u.uTime.value = now * 0.001;
   }
 

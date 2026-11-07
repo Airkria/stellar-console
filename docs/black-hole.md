@@ -54,6 +54,7 @@ float d      = pow(vert, 1.6) * radial * rim;
 - `radial` 中的 `1 / r^2.2`：外盘快速变暗。
 - `rim`：内缘外的窄环增强。
 - 内缘再叠加一个高斯爆亮（`uBurst`），形成“从视界边缘爆出来”的亮带。
+- 相机接近盘面时，`diskThickness()` 按 `smoothstep(0.70, 0.98, uGrazing)` 放大厚度；水平视角下近侧盘面更厚，避免被阴影切成一条细线。`uEdgeBoost` 控制放大倍数，0 可关闭。
 - 最终 `pow(d, uFalloff)` 控制整体衰减速度。
 
 颜色是银白到蓝银的渐变：
@@ -114,6 +115,7 @@ float ring = exp(-pow((b - 2.598) / aa, 2.0));
 | `uStrength` | 整体强度（低画质 0.85） | 1 |
 | `uDiskIn` / `uDiskOut` | 盘内外径 | 2.45 / 11.5 |
 | `uDiskH` | 盘半厚 | 0.13 |
+| `uGrazing` / `uEdgeBoost` | 视角接近盘面时的自动增厚 | 每帧 / 3.0 |
 | `uRBound` | 透镜计算边界 | 12 |
 | `uEmission` | 盘亮度 | 2.2 |
 | `uBurst` | 内缘爆亮 | 2.8 |

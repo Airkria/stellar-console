@@ -161,6 +161,8 @@ export function createBodies(app, S, refs) {
         cloudThickness: tune.starCloudThickness,
         cloudEdge: tune.starCloudEdge,
         cloudInner: tune.starCloudInner,
+        cloudDensity: tune.starCloudDensity,
+        cloudDrag: tune.starCloudDrag,
       });
 
       for (const orbit of entry.orbits) {

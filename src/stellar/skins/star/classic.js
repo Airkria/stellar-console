@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 import { SURFACE_VERTEX_GLSL } from '../glsl.js';
+import { createGlowShell } from './glow-shell.js';
 
 /**
- * Classic emissive star: Fresnel rim + slow surface bands + soft halo.
- * This is the original project-body look, kept as the default skin.
+ * Classic emissive star: Fresnel rim + slow surface bands + a thin Fresnel
+ * glow shell. The shell keeps the centre transparent so the star stays solid.
  */
-export function createClassicStar({ radius, color, glowTexture }) {
+export function createClassicStar({ color }) {
   const group = new THREE.Group();
   const geometry = new THREE.SphereGeometry(1, 32, 24);
   const material = new THREE.ShaderMaterial({
@@ -35,46 +36,33 @@ export function createClassicStar({ radius, color, glowTexture }) {
   const mesh = new THREE.Mesh(geometry, material);
   group.add(mesh);
 
-  const glow = new THREE.Sprite(
-    new THREE.SpriteMaterial({
-      map: glowTexture,
-      color,
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      depthTest: false,
-      opacity: 0.32,
-      toneMapped: false,
-    }),
-  );
-  const glowBase = 7.0;
-  glow.scale.setScalar(glowBase);
-  group.add(glow);
+  const shell = createGlowShell({ color });
+  group.add(shell.object3D);
 
   function update(
     t,
     {
       stateAlpha = 1,
-      halo = 1,
-      glowStrength = 1,
       cloudThickness = 1,
       cloudEdge = 1,
       cloudInner = 1,
     } = {},
   ) {
     material.uniforms.uTime.value = t;
-    material.uniforms.uDim.value = stateAlpha * (0.7 + 0.3 * cloudInner);
+    material.uniforms.uDim.value = stateAlpha;
     mesh.rotation.y = t * 0.12;
-    const pulse = 1 + 0.05 * Math.sin(t * 1.25 + radius * 30);
-    glow.scale.setScalar(glowBase * halo * pulse * (0.6 + 0.6 * cloudThickness));
-    glow.material.opacity =
-      0.32 * glowStrength * stateAlpha * (0.35 + 0.65 * cloudEdge) * (0.92 + 0.08 * Math.sin(t * 1.25 + radius * 30));
+    shell.update(t, {
+      stateAlpha,
+      edge: cloudEdge,
+      inner: cloudInner,
+      thickness: cloudThickness,
+    });
   }
 
   function dispose() {
     geometry.dispose();
     material.dispose();
-    glow.material.dispose();
+    shell.dispose();
   }
 
   return { object3D: group, update, dispose };

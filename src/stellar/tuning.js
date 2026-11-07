@@ -4,6 +4,7 @@ export const TUNE_DEFAULTS = {
   diskIn: 2.45,
   diskOut: 11.5,
   diskH: 0.13,
+  edgeBoost: 3.0,
   emission: 2.2,
   burst: 2.8,
   falloff: 1.3,
@@ -30,6 +31,7 @@ export const TUNE_DEFAULTS = {
   riverSize: 1,
   riverAlpha: 1,
   riverSpeed: 1,
+  galaxySpeed: 1,
   deepSize: 1,
   deepAlpha: 1,
   inflowSize: 1,
@@ -42,11 +44,17 @@ export const TUNE_DEFAULTS = {
   starCloudThickness: 1,
   starCloudEdge: 1,
   starCloudInner: 1,
+  starCloudDensity: 1,
+  starCloudDrag: 1,
   planetRipple: 1,
   orbitScale: 1,
   orbitSpeed: 1,
   orbitAlpha: 1,
   spaceGlow: 1,
+  cssNebula: 1,
+  galaxyAura: 1,
+  nebulaClouds: 1,
+  lensedSky: 1,
   bgUseImage: true,
   bgImageUrl: './assets/bg.jpg',
   bgColor: '#03060c',
@@ -58,22 +66,22 @@ const BASE_CONFIG = [
   { key: 'diskIn', label: '盘内径', min: 2, max: 4, step: 0.05, dec: 2 },
   { key: 'diskOut', label: '盘外径', min: 6, max: 14, step: 0.1, dec: 1 },
   { key: 'diskH', label: '盘厚度', min: 0.05, max: 0.4, step: 0.01, dec: 2 },
+  { key: 'edgeBoost', label: '水平增厚', min: 0, max: 4, step: 0.1, dec: 1 },
   { key: 'burst', label: '内缘爆亮', min: 0, max: 6, step: 0.1, dec: 1 },
   { key: 'falloff', label: '外盘衰减', min: 0.8, max: 2.5, step: 0.05, dec: 2 },
   { key: 'emission', label: '盘亮度', min: 0.5, max: 4, step: 0.05, dec: 2 },
   { key: 'absorb', label: '盘吸收', min: 0, max: 0.2, step: 0.005, dec: 3 },
   { key: 'ring', label: '光子环', min: 0, max: 2, step: 0.05, dec: 2 },
   { key: 'cloudDensity', label: '云层密度', min: 0, max: 1, step: 0.02, dec: 2 },
-  { key: 'flowX', label: '横向流速', min: -1, max: 1, step: 0.02, dec: 2 },
-  { key: 'flowY', label: '纵向流速', min: -1, max: 1, step: 0.02, dec: 2 },
-  { key: 'flowTilingX', label: '横向平铺', min: 2, max: 24, step: 0.1, dec: 1 },
-  { key: 'flowTilingY', label: '纵向平铺', min: 0.3, max: 4, step: 0.05, dec: 2 },
+  { key: 'flowX', label: '横向流速', min: -5, max: 5, step: 0.02, dec: 2 },
+  { key: 'flowY', label: '纵向流速', min: -5, max: 5, step: 0.02, dec: 2 },
+  { key: 'flowTilingX', label: '横向平铺', min: 0.5, max: 40, step: 0.1, dec: 1 },
+  { key: 'flowTilingY', label: '纵向平铺', min: 0.1, max: 8, step: 0.05, dec: 2 },
 
   { group: '星盘', key: 'galaxySize', label: '主星粒径', min: 0.5, max: 2, step: 0.05, dec: 2 },
   { key: 'galaxyAlpha', label: '主星亮度', min: 0, max: 2, step: 0.05, dec: 2 },
   { key: 'dustSize', label: '尘埃粒径', min: 0, max: 2, step: 0.05, dec: 2 },
   { key: 'dustAlpha', label: '尘埃亮度', min: 0, max: 2, step: 0.05, dec: 2 },
-  { key: 'hazeAlpha', label: '星系雾面', min: 0, max: 2, step: 0.05, dec: 2 },
   { key: 'starThick', label: '星盘厚度', min: 0.5, max: 2, step: 0.05, dec: 2 },
   { key: 'starWidth', label: '星盘宽度', min: 0.5, max: 1.8, step: 0.05, dec: 2 },
   { key: 'armInner', label: '旋臂内宽', min: 0.01, max: 0.3, step: 0.005, dec: 3 },
@@ -86,6 +94,8 @@ const BASE_CONFIG = [
   { key: 'starCloudThickness', label: '发光云厚度', min: 0.2, max: 2.5, step: 0.05, dec: 2 },
   { key: 'starCloudEdge', label: '发光云边缘', min: 0, max: 2, step: 0.05, dec: 2 },
   { key: 'starCloudInner', label: '发光云内部', min: 0, max: 2, step: 0.05, dec: 2 },
+  { key: 'starCloudDensity', label: '发光云密度', min: 0, max: 1.5, step: 0.05, dec: 2 },
+  { key: 'starCloudDrag', label: '发光云阻力', min: 0, max: 1.5, step: 0.05, dec: 2 },
   { key: 'planetRipple', label: '扩散光频率', min: 0.2, max: 3, step: 0.05, dec: 2 },
 
   { group: '行星', key: 'planetSize', label: '行星大小', min: 0.4, max: 1.6, step: 0.05, dec: 2 },
@@ -100,6 +110,7 @@ const BASE_CONFIG = [
   { group: '星河', key: 'riverSize', label: '外层星河粒径', min: 0.5, max: 2, step: 0.05, dec: 2 },
   { key: 'riverAlpha', label: '外层星河亮度', min: 0, max: 2, step: 0.05, dec: 2 },
   { key: 'riverSpeed', label: '外层星河转速', min: 0, max: 4, step: 0.05, dec: 2 },
+  { key: 'galaxySpeed', label: '主星盘转速', min: 0, max: 4, step: 0.05, dec: 2 },
   { key: 'deepSize', label: '远景星粒径', min: 0.5, max: 2, step: 0.05, dec: 2 },
   { key: 'deepAlpha', label: '远景星亮度', min: 0, max: 2, step: 0.05, dec: 2 },
 
@@ -108,6 +119,11 @@ const BASE_CONFIG = [
   { key: 'inflowSpeed', label: '入流速度', min: 0, max: 3, step: 0.05, dec: 2 },
 
   { group: '背景', key: 'spaceGlow', label: '背景光晕', min: 0, max: 2, step: 0.05, dec: 2 },
+  { key: 'cssNebula', label: 'CSS 星云', min: 0, max: 2, step: 0.05, dec: 2 },
+  { key: 'hazeAlpha', label: '星系雾面', min: 0, max: 2, step: 0.05, dec: 2 },
+  { key: 'galaxyAura', label: '星系大光晕', min: 0, max: 2, step: 0.05, dec: 2 },
+  { key: 'nebulaClouds', label: '星云团', min: 0, max: 2, step: 0.05, dec: 2 },
+  { key: 'lensedSky', label: '透镜天空', min: 0, max: 2, step: 0.05, dec: 2 },
   { type: 'toggle', key: 'bgUseImage', label: '图片背景' },
   { type: 'text', key: 'bgImageUrl', label: '图片地址', placeholder: './assets/bg.jpg' },
   { type: 'color', key: 'bgColor', label: '纯色背景' },
@@ -189,6 +205,7 @@ export function createTuning(app) {
       u.uDiskIn.value = tune.diskIn;
       u.uDiskOut.value = tune.diskOut;
       u.uDiskH.value = tune.diskH;
+      u.uEdgeBoost.value = tune.edgeBoost;
       u.uEmission.value = tune.emission;
       u.uBurst.value = tune.burst;
       u.uFalloff.value = tune.falloff;
@@ -199,7 +216,7 @@ export function createTuning(app) {
       u.uFlowY.value = tune.flowY;
       u.uFlowTilingX.value = tune.flowTilingX;
       u.uFlowTilingY.value = tune.flowTilingY;
-      u.uSpaceGlow.value = tune.spaceGlow;
+      u.uSpaceGlow.value = tune.spaceGlow * tune.lensedSky;
     }
     if (refs.bloomPass) {
       refs.bloomPass.strength = tune.bloomStrength;
@@ -234,9 +251,9 @@ export function createTuning(app) {
       refs.deepMaterial.uniforms.uAlpha.value = tune.deepAlpha * tune.spaceGlow;
     }
     if (refs.nebulaMaterials) {
-      for (const item of refs.nebulaMaterials) item.material.opacity = item.baseOpacity * tune.spaceGlow;
+      for (const item of refs.nebulaMaterials) item.material.opacity = item.baseOpacity * tune.nebulaClouds * tune.spaceGlow;
     }
-    if (refs.auraMaterial) refs.auraMaterial.opacity = 0.07 * tune.spaceGlow;
+    if (refs.auraMaterial) refs.auraMaterial.opacity = 0.07 * tune.galaxyAura * tune.spaceGlow;
     if (refs.inflowMaterial) {
       refs.inflowMaterial.uniforms.uSize.value = 0.06 * tune.inflowSize;
       refs.inflowMaterial.uniforms.uAlpha.value = tune.inflowAlpha;
@@ -244,7 +261,7 @@ export function createTuning(app) {
     document.documentElement.style.setProperty('--planet-glow', String(tune.planetGlow));
     document.documentElement.style.setProperty('--planet-core', String(tune.planetCore));
     document.documentElement.style.setProperty('--planet-ripple', String(tune.planetRipple));
-    document.documentElement.style.setProperty('--space-glow', String(tune.spaceGlow));
+    document.documentElement.style.setProperty('--space-glow', String(tune.spaceGlow * tune.cssNebula));
     app.scene?.applyBackground?.();
     app.requestRender?.();
   }

@@ -1,6 +1,6 @@
 {
   "name": "stellar-console",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": false,
   "description": "群星交互系统 — 以星系为界面的项目交互中枢 / A galaxy-shaped project console built with Three.js",
   "type": "module",
