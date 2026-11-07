@@ -42,6 +42,8 @@ export function createTunePanel(app) {
         html += `<label class="tune-row tune-text"><span>${c.label}</span><input type="text" data-tune="${c.key}" value="${esc(tuning.tune[c.key])}" placeholder="${esc(c.placeholder || '')}"></label>`;
       } else if (type === 'color') {
         html += `<label class="tune-row tune-color"><span>${c.label}</span><input type="color" data-tune="${c.key}" value="${esc(tuning.tune[c.key])}"></label>`;
+      } else if (type === 'file') {
+        html += `<label class="tune-row tune-file"><span>${c.label}</span><button type="button" class="tune-file-btn" data-file-btn="${c.key}">选择…</button><input type="file" accept="image/*" data-file="${c.key}" hidden></label>`;
       } else {
         const dec = c.dec ?? 2;
         html += `<label class="tune-row"><span>${c.label}</span><b data-tune-val="${c.key}">${Number(tuning.tune[c.key]).toFixed(dec)}</b><input type="range" data-tune="${c.key}" min="${c.min}" max="${c.max}" step="${c.step}" value="${tuning.tune[c.key]}"></label>`;
@@ -70,6 +72,27 @@ export function createTunePanel(app) {
       }
     });
 
+    $$('#tuneBody input[data-file]').forEach((input) => {
+      const button = $(`#tuneBody [data-file-btn="${input.dataset.file}"]`);
+      button?.addEventListener('click', () => input.click());
+      input.addEventListener('change', () => {
+        const file = input.files?.[0];
+        if (!file) return;
+        if (file.size > 4 * 1024 * 1024) app.toast?.('图片较大，刷新后可能无法保留');
+        const reader = new FileReader();
+        reader.onload = () => {
+          tuning.set('bgImageUrl', String(reader.result || ''));
+          tuning.set('bgUseImage', true);
+          const urlInput = $('#tuneBody input[data-tune="bgImageUrl"]');
+          if (urlInput) urlInput.value = tuning.tune.bgImageUrl;
+          const toggle = $('#tuneBody input[data-tune="bgUseImage"]');
+          if (toggle) toggle.checked = true;
+          app.toast?.('背景图片已更新');
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
     $$('#tuneBody select[data-star-skin]').forEach((select) => {
       select.addEventListener('change', () => {
         app.skinState.setStar(select.dataset.starSkin, select.value);
@@ -90,6 +113,7 @@ export function createTunePanel(app) {
     $('#tuneReset')?.addEventListener('click', () => {
       tuning.reset();
       for (const c of tuning.config) {
+        if (c.type === 'file') continue;
         const input = $(`#tuneBody input[data-tune="${c.key}"]`);
         const output = $(`#tuneBody [data-tune-val="${c.key}"]`);
         if (!input) continue;

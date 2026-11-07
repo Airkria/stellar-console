@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.5.0 — 2026-11-08
+
+- Removed the procedural lensed sky from the black-hole pass; the scene texture
+  is now the only background. Removed the galaxy haze sprite. A solid black
+  backdrop is now actually black.
+- Replaced `edgeBoost` with signed `edgeThickness` (negative compresses,
+  positive thickens the disk near edge-on; 0 leaves it unchanged).
+- Split the star into two clearly named layers: the Fresnel shell (`starShell*`,
+  with an enable toggle) and the glow-cloud particle shell (`starParticle*`,
+  with count, birth speed, drag, size and brightness).
+- Particle count is driven by `setDrawRange`, so changing it does not rebuild
+  geometry. Particles are born at the surface, travel outward and are pulled
+  back by drag.
+- Moved the nebula clouds well beyond the camera's max distance so they cannot
+  block the view when orbiting or zooming out.
+- Added a background image file picker (`选择图片`) that opens the system file
+  chooser and stores the image as a data URL.
+
 ## 0.4.0 — 2026-11-08
 
 - Opened the disk flow ranges: X/Y speed now -5..5, tiling 0.5..40 / 0.1..8.

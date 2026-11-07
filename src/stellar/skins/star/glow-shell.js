@@ -46,7 +46,8 @@ export function createGlowShell({ color }) {
   });
   const mesh = new THREE.Mesh(geometry, material);
 
-  function update(t, { stateAlpha = 1, edge = 1, inner = 1, thickness = 1 } = {}) {
+  function update(t, { stateAlpha = 1, enabled = true, edge = 1, inner = 0.35, thickness = 1 } = {}) {
+    mesh.visible = enabled;
     material.uniforms.uTime.value = t;
     material.uniforms.uDim.value = stateAlpha;
     material.uniforms.uEdge.value = edge;

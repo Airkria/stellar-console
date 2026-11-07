@@ -65,15 +65,16 @@ export function createSunStar({ radius, glowTexture }) {
   const shell = createGlowShell({ color: new THREE.Color(0xff5a12) });
   group.add(shell.object3D);
 
-  // Hot particle shell.
-  const count = 520;
-  const positions = new Float32Array(count * 3);
-  const seeds = new Float32Array(count);
-  const sizes = new Float32Array(count);
+  // Glow-cloud particle shell: particles are born at the surface with an
+  // outward velocity, then drag pulls them back as they fade.
+  const MAX_PARTICLES = 1400;
+  const positions = new Float32Array(MAX_PARTICLES * 3);
+  const seeds = new Float32Array(MAX_PARTICLES);
+  const sizes = new Float32Array(MAX_PARTICLES);
   const dir = new THREE.Vector3();
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < MAX_PARTICLES; i++) {
     dir.randomDirection();
-    const r = 1.12 + Math.random() * 0.34;
+    const r = 1.02 + Math.random() * 0.07;
     positions[i * 3] = dir.x * r;
     positions[i * 3 + 1] = dir.y * r;
     positions[i * 3 + 2] = dir.z * r;
@@ -84,14 +85,15 @@ export function createSunStar({ radius, glowTexture }) {
   coronaGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   coronaGeo.setAttribute('aSeed', new THREE.BufferAttribute(seeds, 1));
   coronaGeo.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
+  coronaGeo.setDrawRange(0, 520);
   const coronaMat = new THREE.ShaderMaterial({
     uniforms: {
       uTime: { value: 0 },
       uActivity: { value: 1 },
-      uEdge: { value: 1 },
-      uDensity: { value: 1 },
+      uSpeed: { value: 1 },
       uDrag: { value: 1 },
-      uThickness: { value: 1 },
+      uSize: { value: 1 },
+      uBrightness: { value: 1 },
     },
     vertexShader: /* glsl */ `
       attribute float aSeed;
@@ -99,24 +101,19 @@ export function createSunStar({ radius, glowTexture }) {
       varying float vA;
       uniform float uTime;
       uniform float uActivity;
-      uniform float uEdge;
-      uniform float uDensity;
+      uniform float uSpeed;
       uniform float uDrag;
-      uniform float uThickness;
+      uniform float uSize;
+      uniform float uBrightness;
       void main() {
-        float density = clamp(uDensity, 0.0, 1.5);
-        if (aSeed > min(density, 1.0)) {
-          gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
-          gl_PointSize = 0.0;
-          return;
-        }
-        float drag = 1.0 - clamp(uDrag, 0.0, 1.0);
-        float breathe = 0.035 * drag * sin(uTime * 1.2 + aSeed * 6.2831);
-        vec3 p = position * (1.0 + breathe + (uThickness - 1.0) * 0.10);
-        vA = (0.45 + 0.55 * sin(uTime * 2.4 + aSeed * 12.0))
-          * (0.5 + 0.5 * uActivity) * uEdge * (0.35 + 0.65 * density);
+        float life = fract(uTime * 0.11 * (0.5 + aSeed) + aSeed * 6.2831);
+        float v0 = uSpeed * (0.4 + 0.6 * fract(aSeed * 13.7));
+        float travel = v0 * life * (1.0 - 0.35 * uDrag * life);
+        vec3 p = position * (1.0 + max(0.0, travel) * 0.55);
+        float fade = smoothstep(0.0, 0.12, life) * (1.0 - smoothstep(0.72, 1.0, life));
+        vA = fade * uBrightness * (0.5 + 0.5 * uActivity) * (0.4 + 0.6 * fract(aSeed * 7.0));
         vec4 mv = modelViewMatrix * vec4(p, 1.0);
-        gl_PointSize = aSize * (2.0 + 2.5 * fract(aSeed * 7.13)) * (40.0 / max(0.1, -mv.z));
+        gl_PointSize = aSize * uSize * (2.0 + 2.5 * fract(aSeed * 7.13)) * (40.0 / max(0.1, -mv.z));
         gl_Position = projectionMatrix * mv;
       }`,
     fragmentShader: /* glsl */ `
@@ -127,7 +124,7 @@ export function createSunStar({ radius, glowTexture }) {
         if (r > 0.5) discard;
         float a = smoothstep(0.5, 0.0, r);
         vec3 col = mix(vec3(1.0, 0.20, 0.02), vec3(1.0, 0.72, 0.28), a);
-        gl_FragColor = vec4(col, a * vA * 0.5);
+        gl_FragColor = vec4(col, a * vA * 0.6);
       }`,
     transparent: true,
     blending: THREE.AdditiveBlending,
@@ -168,11 +165,15 @@ export function createSunStar({ radius, glowTexture }) {
       halo = 1,
       glowStrength = 1,
       activity = 1,
-      cloudThickness = 1,
-      cloudEdge = 1,
-      cloudInner = 1,
-      cloudDensity = 1,
-      cloudDrag = 1,
+      shellEnabled = true,
+      shellThickness = 1,
+      shellEdge = 1,
+      shellInner = 0.35,
+      particleCount = 520,
+      particleSpeed = 1,
+      particleDrag = 1,
+      particleSize = 1,
+      particleBrightness = 1,
     } = {},
   ) {
     material.uniforms.uTime.value = t;
@@ -180,15 +181,18 @@ export function createSunStar({ radius, glowTexture }) {
     material.uniforms.uActivity.value = activity;
     coronaMat.uniforms.uTime.value = t;
     coronaMat.uniforms.uActivity.value = activity;
-    coronaMat.uniforms.uEdge.value = cloudEdge;
-    coronaMat.uniforms.uDensity.value = cloudDensity;
-    coronaMat.uniforms.uDrag.value = cloudDrag;
-    coronaMat.uniforms.uThickness.value = cloudThickness;
+    coronaMat.uniforms.uSpeed.value = particleSpeed;
+    coronaMat.uniforms.uDrag.value = particleDrag;
+    coronaMat.uniforms.uSize.value = particleSize;
+    coronaMat.uniforms.uBrightness.value = particleBrightness;
+    const active = Math.max(0, Math.min(MAX_PARTICLES, Math.round(particleCount)));
+    coronaGeo.setDrawRange(0, active);
     shell.update(t, {
       stateAlpha,
-      edge: cloudEdge,
-      inner: cloudInner,
-      thickness: cloudThickness,
+      enabled: shellEnabled,
+      edge: shellEdge,
+      inner: shellInner,
+      thickness: shellThickness,
     });
     surface.rotation.y = t * 0.06;
 

@@ -54,7 +54,7 @@ float d      = pow(vert, 1.6) * radial * rim;
 - `radial` 中的 `1 / r^2.2`：外盘快速变暗。
 - `rim`：内缘外的窄环增强。
 - 内缘再叠加一个高斯爆亮（`uBurst`），形成“从视界边缘爆出来”的亮带。
-- 相机接近盘面时，`diskThickness()` 按 `smoothstep(0.70, 0.98, uGrazing)` 放大厚度；水平视角下近侧盘面更厚，避免被阴影切成一条细线。`uEdgeBoost` 控制放大倍数，0 可关闭。
+- 相机接近盘面时，`diskThickness()` 按 `smoothstep(0.70, 0.98, uGrazing)` 放大厚度；水平视角下近侧盘面更厚，避免被阴影切成一条细线。`uEdgeThickness` 控制厚度偏移：负值压缩，正值增厚，0 关闭。
 - 最终 `pow(d, uFalloff)` 控制整体衰减速度。
 
 颜色是银白到蓝银的渐变：
@@ -100,10 +100,10 @@ float ring = exp(-pow((b - 2.598) / aa, 2.0));
 
 ## 背景与遮挡
 
-- 光线逃逸后，用偏折后的方向采样程序化星空 `lensedSky(d)`，并与原始场景纹理混合。
+- 光线逃逸后直接使用场景纹理 `here` 作为背景，不再叠加程序化透镜星空；这样纯色背景不会被一层蓝色星空底噪污染。
 - 盘内区域把背景压暗到 `0.12`，避免星系核心比吸积盘还亮。
 - `outCol = diskOut + bg * trans`：盘面发光叠加经过吸收后的背景。
-- `uSpaceGlow = 0` 时，透镜天空与背景下限一起归零；配合纯色黑色背景可以得到真正的纯黑，只剩吸积盘、光子环和前景星体。
+- 背景只来自场景纹理；纯色背景时，黑洞周围不会再有额外的透镜星空亮斑。
 - DOM 项目标签的遮挡由 `projection.js` 单独计算：项目在黑洞后方且屏幕距离小于阴影半径时淡出。
 
 ## Uniforms
@@ -115,7 +115,7 @@ float ring = exp(-pow((b - 2.598) / aa, 2.0));
 | `uStrength` | 整体强度（低画质 0.85） | 1 |
 | `uDiskIn` / `uDiskOut` | 盘内外径 | 2.45 / 11.5 |
 | `uDiskH` | 盘半厚 | 0.13 |
-| `uGrazing` / `uEdgeBoost` | 视角接近盘面时的自动增厚 | 每帧 / 3.0 |
+| `uGrazing` / `uEdgeThickness` | 视角接近盘面时的厚度偏移 | 每帧 / 0.0 |
 | `uRBound` | 透镜计算边界 | 12 |
 | `uEmission` | 盘亮度 | 2.2 |
 | `uBurst` | 内缘爆亮 | 2.8 |
@@ -125,7 +125,6 @@ float ring = exp(-pow((b - 2.598) / aa, 2.0));
 | `uCloudDensity` | 云层覆盖率 | 0.55 |
 | `uFlowX` / `uFlowY` | 横向 / 纵向移动速度 | 0.12 / 0.05 |
 | `uFlowTilingX` / `uFlowTilingY` | 横向 / 纵向平铺次数 | 9.0 / 1.35 |
-| `uSpaceGlow` | 透镜天空与背景下限亮度 | 1.0 |
 | `uFlowMap` / `uFlowMap2` | 两张 fBm 纹理 | 运行时生成 |
 
 ## 性能

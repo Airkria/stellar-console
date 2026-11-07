@@ -4,7 +4,7 @@ export const TUNE_DEFAULTS = {
   diskIn: 2.45,
   diskOut: 11.5,
   diskH: 0.13,
-  edgeBoost: 3.0,
+  edgeThickness: 0.0,
   emission: 2.2,
   burst: 2.8,
   falloff: 1.3,
@@ -22,7 +22,6 @@ export const TUNE_DEFAULTS = {
   galaxyAlpha: 1,
   dustSize: 1,
   dustAlpha: 1,
-  hazeAlpha: 1,
   starThick: 1,
   starWidth: 1,
   armInner: 0.07,
@@ -41,11 +40,15 @@ export const TUNE_DEFAULTS = {
   planetCore: 1,
   planetSize: 1,
   starScale: 1,
-  starCloudThickness: 1,
-  starCloudEdge: 1,
-  starCloudInner: 1,
-  starCloudDensity: 1,
-  starCloudDrag: 1,
+  starShellEnabled: true,
+  starShellThickness: 1,
+  starShellEdge: 1,
+  starShellInner: 0.35,
+  starParticleCount: 520,
+  starParticleSpeed: 1,
+  starParticleDrag: 1,
+  starParticleSize: 1,
+  starParticleBrightness: 1,
   planetRipple: 1,
   orbitScale: 1,
   orbitSpeed: 1,
@@ -54,7 +57,6 @@ export const TUNE_DEFAULTS = {
   cssNebula: 1,
   galaxyAura: 1,
   nebulaClouds: 1,
-  lensedSky: 1,
   bgUseImage: true,
   bgImageUrl: './assets/bg.jpg',
   bgColor: '#03060c',
@@ -66,7 +68,7 @@ const BASE_CONFIG = [
   { key: 'diskIn', label: '盘内径', min: 2, max: 4, step: 0.05, dec: 2 },
   { key: 'diskOut', label: '盘外径', min: 6, max: 14, step: 0.1, dec: 1 },
   { key: 'diskH', label: '盘厚度', min: 0.05, max: 0.4, step: 0.01, dec: 2 },
-  { key: 'edgeBoost', label: '水平增厚', min: 0, max: 4, step: 0.1, dec: 1 },
+  { key: 'edgeThickness', label: '水平厚度', min: -0.9, max: 4, step: 0.05, dec: 2 },
   { key: 'burst', label: '内缘爆亮', min: 0, max: 6, step: 0.1, dec: 1 },
   { key: 'falloff', label: '外盘衰减', min: 0.8, max: 2.5, step: 0.05, dec: 2 },
   { key: 'emission', label: '盘亮度', min: 0.5, max: 4, step: 0.05, dec: 2 },
@@ -91,12 +93,18 @@ const BASE_CONFIG = [
   { group: '恒星', key: 'planetGlow', label: '光晕亮度', min: 0, max: 1.5, step: 0.05, dec: 2 },
   { key: 'planetCore', label: '核心大小', min: 0.5, max: 1.6, step: 0.05, dec: 2 },
   { key: 'starScale', label: '恒星大小', min: 0.4, max: 1.5, step: 0.05, dec: 2 },
-  { key: 'starCloudThickness', label: '发光云厚度', min: 0.2, max: 2.5, step: 0.05, dec: 2 },
-  { key: 'starCloudEdge', label: '发光云边缘', min: 0, max: 2, step: 0.05, dec: 2 },
-  { key: 'starCloudInner', label: '发光云内部', min: 0, max: 2, step: 0.05, dec: 2 },
-  { key: 'starCloudDensity', label: '发光云密度', min: 0, max: 1.5, step: 0.05, dec: 2 },
-  { key: 'starCloudDrag', label: '发光云阻力', min: 0, max: 1.5, step: 0.05, dec: 2 },
   { key: 'planetRipple', label: '扩散光频率', min: 0.2, max: 3, step: 0.05, dec: 2 },
+
+  { group: '光罩', type: 'toggle', key: 'starShellEnabled', label: '启用光罩' },
+  { key: 'starShellThickness', label: '光罩厚度', min: 0.2, max: 2.5, step: 0.05, dec: 2 },
+  { key: 'starShellEdge', label: '光罩边缘亮度', min: 0, max: 2, step: 0.05, dec: 2 },
+  { key: 'starShellInner', label: '光罩内部亮度', min: 0, max: 2, step: 0.05, dec: 2 },
+
+  { group: '发光云', key: 'starParticleCount', label: '粒子数量', min: 0, max: 1400, step: 10, dec: 0 },
+  { key: 'starParticleSpeed', label: '出生速度', min: 0, max: 3, step: 0.05, dec: 2 },
+  { key: 'starParticleDrag', label: '阻力', min: 0, max: 3, step: 0.05, dec: 2 },
+  { key: 'starParticleSize', label: '粒子大小', min: 0.3, max: 2, step: 0.05, dec: 2 },
+  { key: 'starParticleBrightness', label: '粒子亮度', min: 0, max: 2, step: 0.05, dec: 2 },
 
   { group: '行星', key: 'planetSize', label: '行星大小', min: 0.4, max: 1.6, step: 0.05, dec: 2 },
   { key: 'orbitScale', label: '卫星轨道', min: 0.5, max: 1.8, step: 0.05, dec: 2 },
@@ -120,12 +128,11 @@ const BASE_CONFIG = [
 
   { group: '背景', key: 'spaceGlow', label: '背景光晕', min: 0, max: 2, step: 0.05, dec: 2 },
   { key: 'cssNebula', label: 'CSS 星云', min: 0, max: 2, step: 0.05, dec: 2 },
-  { key: 'hazeAlpha', label: '星系雾面', min: 0, max: 2, step: 0.05, dec: 2 },
   { key: 'galaxyAura', label: '星系大光晕', min: 0, max: 2, step: 0.05, dec: 2 },
   { key: 'nebulaClouds', label: '星云团', min: 0, max: 2, step: 0.05, dec: 2 },
-  { key: 'lensedSky', label: '透镜天空', min: 0, max: 2, step: 0.05, dec: 2 },
   { type: 'toggle', key: 'bgUseImage', label: '图片背景' },
   { type: 'text', key: 'bgImageUrl', label: '图片地址', placeholder: './assets/bg.jpg' },
+  { type: 'file', key: 'bgImageFile', label: '选择图片' },
   { type: 'color', key: 'bgColor', label: '纯色背景' },
 ];
 
@@ -205,7 +212,7 @@ export function createTuning(app) {
       u.uDiskIn.value = tune.diskIn;
       u.uDiskOut.value = tune.diskOut;
       u.uDiskH.value = tune.diskH;
-      u.uEdgeBoost.value = tune.edgeBoost;
+      u.uEdgeThickness.value = tune.edgeThickness;
       u.uEmission.value = tune.emission;
       u.uBurst.value = tune.burst;
       u.uFalloff.value = tune.falloff;
@@ -216,7 +223,6 @@ export function createTuning(app) {
       u.uFlowY.value = tune.flowY;
       u.uFlowTilingX.value = tune.flowTilingX;
       u.uFlowTilingY.value = tune.flowTilingY;
-      u.uSpaceGlow.value = tune.spaceGlow * tune.lensedSky;
     }
     if (refs.bloomPass) {
       refs.bloomPass.strength = tune.bloomStrength;
@@ -241,7 +247,6 @@ export function createTuning(app) {
       refs.dustMaterial.uniforms.uArmOuter.value = tune.armOuter;
       refs.dustMaterial.uniforms.uArmWidth.value = tune.armWidth;
     }
-    if (refs.hazeMaterial) refs.hazeMaterial.opacity = 0.42 * tune.hazeAlpha * tune.spaceGlow;
     if (refs.riverMaterial) {
       refs.riverMaterial.uniforms.uSize.value = 0.08 * tune.riverSize;
       refs.riverMaterial.uniforms.uAlpha.value = tune.riverAlpha;

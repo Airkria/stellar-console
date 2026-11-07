@@ -32,9 +32,8 @@ export const blackHoleShader = {
     uFlowY: { value: 0.05 },
     uFlowTilingX: { value: 9.0 },
     uFlowTilingY: { value: 1.35 },
-    uSpaceGlow: { value: 1.0 },
     uGrazing: { value: 0.3 },
-    uEdgeBoost: { value: 2.0 },
+    uEdgeThickness: { value: 0.0 },
     uFlowMap: { value: null },
     uFlowMap2: { value: null },
   },
@@ -72,9 +71,8 @@ export const blackHoleShader = {
     uniform float uFlowY;
     uniform float uFlowTilingX;
     uniform float uFlowTilingY;
-    uniform float uSpaceGlow;
     uniform float uGrazing;
-    uniform float uEdgeBoost;
+    uniform float uEdgeThickness;
     uniform sampler2D uFlowMap;
     uniform sampler2D uFlowMap2;
 
@@ -92,36 +90,6 @@ export const blackHoleShader = {
       return -1.5 * h2 * p / (r2 * r2 * sqrt(r2));
     }
 
-    float hash21(vec2 p) {
-      p = fract(p * vec2(123.34, 456.21));
-      p += dot(p, p + 45.32);
-      return fract(p.x * p.y);
-    }
-
-    // Deep-space starfield seen through the lens. Sparse points become arcs
-    // when the geodesic compresses them near the critical curve.
-    vec3 lensedSky(vec3 d) {
-      vec3 col = vec3(0.0035, 0.006, 0.014);
-      float lon = atan(d.z, d.x) / 6.2831853;
-      float lat = asin(clamp(d.y, -1.0, 1.0)) / 3.14159265;
-      for (int k = 0; k < 2; k++) {
-        float scale = k == 0 ? 84.0 : 158.0;
-        vec2 uv = vec2(lon, lat) * scale + float(k) * 19.7;
-        vec2 id = floor(uv);
-        vec2 f = fract(uv) - 0.5;
-        float h = hash21(id);
-        float thresh = k == 0 ? 0.972 : 0.990;
-        if (h > thresh) {
-          float s = smoothstep(0.20, 0.0, length(f));
-          float tw = 0.45 + 0.55 * fract(h * 91.7);
-          vec3 tint = mix(vec3(0.74, 0.86, 1.0), vec3(1.0, 0.94, 0.86), fract(h * 13.0));
-          col += tint * s * tw * 1.8;
-        }
-      }
-      col += vec3(0.006, 0.010, 0.026) * smoothstep(-0.3, 0.9, d.y);
-      return col;
-    }
-
     // Bright silver, cooling to blue-silver at the outer edge.
     vec3 silverPalette(float r) {
       float t = clamp((r - uDiskIn) / (uDiskOut - uDiskIn), 0.0, 1.0);
@@ -133,10 +101,10 @@ export const blackHoleShader = {
     }
 
     float diskThickness() {
-      // Only thicken when the camera is close to the disk plane; face-on
-      // views keep the tuned thickness.
+      // Signed: negative compresses the disk near edge-on, positive thickens.
+      // Face-on views keep the tuned thickness.
       float g = smoothstep(0.70, 0.98, uGrazing);
-      return uDiskH * (1.0 + g * uEdgeBoost);
+      return max(0.02, uDiskH * (1.0 + g * uEdgeThickness));
     }
 
     // Smooth volumetric disk: no texture noise, so no moiré. The volume
@@ -250,10 +218,10 @@ export const blackHoleShader = {
       if (captured) {
         outCol = diskOut;
       } else {
-        vec3 d = normalize(vel);
-        float skyAmt = smoothstep(5.0, 2.8, b);
-        vec3 bg = mix(here, lensedSky(d) * uSpaceGlow, skyAmt);
-        bg = max(bg, vec3(0.006, 0.010, 0.022) * uSpaceGlow);
+        // The scene texture is the only background. There is deliberately no
+        // procedural lensed sky: it used to add a faint blue disk that made a
+        // "pure black" backdrop impossible to achieve.
+        vec3 bg = here;
         // The galaxy core is much brighter than the disk; suppress it locally
         // so the silver plasma reads as the volume, not a white cut-out.
         bg *= mix(0.12, 1.0, smoothstep(uDiskIn, uDiskOut * 1.15, b));

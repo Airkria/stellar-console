@@ -1,31 +1,12 @@
 import * as THREE from 'three';
 import { gauss } from './core/math.js';
-import { makeGlowTexture, makeGalaxyHazeTexture } from './textures.js';
+import { makeGlowTexture } from './textures.js';
 
 /**
  * Builds every star/nebula layer around the central black hole.
  * All layers share additive point materials and the same generated sprite.
  */
 export function createGalaxy({ scene, galaxyGroup, starTexture, refs }) {
-  function buildGalaxyPlane() {
-    const tex = makeGalaxyHazeTexture();
-    // Camera-facing haze billboard: a flat plane collapses to a hard bright
-    // line at grazing angles.
-    refs.hazeMaterial = new THREE.SpriteMaterial({
-      map: tex,
-      transparent: true,
-      depthWrite: false,
-      depthTest: false,
-      opacity: 0.42,
-      blending: THREE.AdditiveBlending,
-      toneMapped: false,
-    });
-    const sprite = new THREE.Sprite(refs.hazeMaterial);
-    sprite.scale.set(8.4, 8.4, 1);
-    sprite.renderOrder = -1;
-    galaxyGroup.add(sprite);
-  }
-
   function buildGalaxyPoints() {
     const N = 140000;
     const pos = new Float32Array(N * 3);
@@ -492,12 +473,14 @@ export function createGalaxy({ scene, galaxyGroup, starTexture, refs }) {
 
   function buildNebulaClouds() {
     const defs = [
-      { p: [-10.5, 2.2, -3.5], s: 12, c: ['rgba(145,185,255,1)', 'rgba(55,100,220,.32)'], o: 0.05 },
-      { p: [10, -1.8, -5], s: 10, c: ['rgba(160,130,255,1)', 'rgba(90,55,210,.30)'], o: 0.045 },
-      { p: [-7, -3, 4.5], s: 9, c: ['rgba(90,205,235,1)', 'rgba(30,120,200,.28)'], o: 0.04 },
-      { p: [8.5, 3.2, 4], s: 9.5, c: ['rgba(255,205,160,1)', 'rgba(180,110,60,.22)'], o: 0.028 },
-      { p: [0, 5, -10], s: 13, c: ['rgba(130,165,255,1)', 'rgba(60,90,190,.26)'], o: 0.038 },
-      { p: [-4, -5, -9], s: 11, c: ['rgba(175,145,255,1)', 'rgba(95,60,190,.24)'], o: 0.032 },
+      // Far background only: keep well outside the camera's max distance so
+      // orbiting / zooming out cannot put a cloud between the camera and the galaxy.
+      { p: [-48, 10, -22], s: 52, c: ['rgba(145,185,255,1)', 'rgba(55,100,220,.32)'], o: 0.05 },
+      { p: [44, -8, -28], s: 46, c: ['rgba(160,130,255,1)', 'rgba(90,55,210,.30)'], o: 0.045 },
+      { p: [-32, -16, 38], s: 44, c: ['rgba(90,205,235,1)', 'rgba(30,120,200,.28)'], o: 0.04 },
+      { p: [36, 14, 32], s: 46, c: ['rgba(255,205,160,1)', 'rgba(180,110,60,.22)'], o: 0.035 },
+      { p: [0, 30, -58], s: 60, c: ['rgba(130,165,255,1)', 'rgba(60,90,190,.26)'], o: 0.04 },
+      { p: [-24, -24, -48], s: 50, c: ['rgba(175,145,255,1)', 'rgba(95,60,190,.24)'], o: 0.035 },
     ];
     const texCache = new Map();
     const group = new THREE.Group();
@@ -619,7 +602,6 @@ export function createGalaxy({ scene, galaxyGroup, starTexture, refs }) {
   }
 
   function build() {
-    buildGalaxyPlane();
     buildGalaxyPoints();
     buildDustPoints();
     buildInflow();

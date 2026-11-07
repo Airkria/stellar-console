@@ -158,11 +158,15 @@ export function createBodies(app, S, refs) {
         halo,
         glowStrength: tune.planetGlow,
         activity,
-        cloudThickness: tune.starCloudThickness,
-        cloudEdge: tune.starCloudEdge,
-        cloudInner: tune.starCloudInner,
-        cloudDensity: tune.starCloudDensity,
-        cloudDrag: tune.starCloudDrag,
+        shellEnabled: tune.starShellEnabled,
+        shellThickness: tune.starShellThickness,
+        shellEdge: tune.starShellEdge,
+        shellInner: tune.starShellInner,
+        particleCount: tune.starParticleCount,
+        particleSpeed: tune.starParticleSpeed,
+        particleDrag: tune.starParticleDrag,
+        particleSize: tune.starParticleSize,
+        particleBrightness: tune.starParticleBrightness,
       });
 
       for (const orbit of entry.orbits) {

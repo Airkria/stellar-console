@@ -126,14 +126,14 @@ check('deselected label', await evaluate('document.querySelector(".star[data-pro
 check(
   'new tune keys',
   await evaluate(
-    '["cloudDensity","flowTilingX","flowTilingY","riverSpeed","galaxySpeed","inflowSpeed","starCloudThickness","starCloudDensity","starCloudDrag","spaceGlow","cssNebula","lensedSky","edgeBoost","bgUseImage"].every((k) => k in stellarConsole.getTune())',
+    '["cloudDensity","flowTilingX","flowTilingY","riverSpeed","galaxySpeed","inflowSpeed","starShellThickness","starParticleCount","starParticleSpeed","starParticleDrag","spaceGlow","cssNebula","edgeThickness","bgUseImage"].every((k) => k in stellarConsole.getTune())',
   ),
   true,
 );
 check(
   'panel groups',
   await evaluate('[...document.querySelectorAll("#tuneBody .tune-group")].map((e) => e.textContent).join(",")'),
-  '黑洞,星盘,恒星,行星,辉光,星河,入流,背景,皮肤',
+  '黑洞,星盘,恒星,光罩,发光云,行星,辉光,星河,入流,背景,皮肤',
 );
 check('star skins', await evaluate('stellarConsole.listStarSkins().map((s) => s.value).join(",")'), 'classic,sun');
 await evaluate('stellarConsole.setStarSkin("orion", "classic")');

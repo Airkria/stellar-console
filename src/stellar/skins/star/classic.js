@@ -43,9 +43,10 @@ export function createClassicStar({ color }) {
     t,
     {
       stateAlpha = 1,
-      cloudThickness = 1,
-      cloudEdge = 1,
-      cloudInner = 1,
+      shellEnabled = true,
+      shellThickness = 1,
+      shellEdge = 1,
+      shellInner = 0.35,
     } = {},
   ) {
     material.uniforms.uTime.value = t;
@@ -53,9 +54,10 @@ export function createClassicStar({ color }) {
     mesh.rotation.y = t * 0.12;
     shell.update(t, {
       stateAlpha,
-      edge: cloudEdge,
-      inner: cloudInner,
-      thickness: cloudThickness,
+      enabled: shellEnabled,
+      edge: shellEdge,
+      inner: shellInner,
+      thickness: shellThickness,
     });
   }
 
