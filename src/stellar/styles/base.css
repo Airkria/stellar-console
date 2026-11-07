@@ -1,0 +1,71 @@
+/* Stellar Console · 群星交互系统 · 基础层 */
+:root{
+  --hud-h:56px;
+  --bg:#03060c;
+  --ink:#e9f4ff;
+  --muted:#a7bcda;
+  --faint:#7288aa;
+  --line:rgba(110,200,255,.22);
+  --line2:rgba(125,225,255,.5);
+  --cyan:#72e9ff;
+  --cyan2:#3ac8ec;
+  --amber:#ffbf6d;
+  --red:#ff6f7d;
+  --green:#7dffb2;
+  --font:"Segoe UI","Microsoft YaHei UI",system-ui,sans-serif;
+  --mono:"Cascadia Mono",Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);overflow:hidden;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+h1,h2,h3,h4,p,ul,ol{margin:0}
+ul,ol{list-style:none;padding:0}
+svg{display:block}
+::selection{background:rgba(90,215,255,.25)}
+:focus-visible{outline:1px solid rgba(155,235,255,.85);outline-offset:3px}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:rgba(100,195,255,.28);border:2px solid transparent;background-clip:content-box;border-radius:6px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ---------- HUD ---------- */
+.hud{
+  position:fixed;inset:0 0 auto;height:var(--hud-h);z-index:20;
+  display:flex;align-items:center;gap:26px;padding:0 24px;
+  background:linear-gradient(180deg,rgba(3,7,14,.92),rgba(3,7,14,.5));
+  border-bottom:1px solid var(--line);backdrop-filter:blur(12px);
+  box-shadow:0 14px 40px rgba(0,0,0,.28);
+}
+.hud::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(110,225,255,.34) 30%,rgba(170,245,255,.42) 50%,rgba(110,225,255,.34) 70%,transparent);
+  opacity:.7;
+}
+.hud-left{display:flex;align-items:center;gap:11px;min-width:220px}
+.mark{display:grid;place-items:center;width:32px;height:32px;color:var(--cyan);border:1px solid rgba(110,225,255,.32);border-radius:50%;box-shadow:0 0 18px rgba(80,205,255,.28),inset 0 0 12px rgba(80,205,255,.14)}
+.mark svg{width:20px;height:20px}
+.brand-copy{display:flex;flex-direction:column;line-height:1.15}
+.brand-copy b{font-size:14px;letter-spacing:.14em;font-weight:600}
+.brand-copy small{font-family:var(--mono);font-size:8px;letter-spacing:.2em;color:var(--faint);margin-top:3px}
+.hud-stats{display:flex;align-items:center}
+.hud-stats span{display:flex;flex-direction:column;gap:2px;padding:0 15px;border-left:1px solid var(--line);min-width:72px}
+.hud-stats span:first-child{border-left:0;padding-left:0}
+.hud-stats b{font-family:var(--mono);font-size:18px;font-weight:600;line-height:1;color:#eef8ff;font-variant-numeric:tabular-nums}
+.hud-stats small{font-size:9.5px;letter-spacing:.06em;color:var(--faint)}
+.hud-right{display:flex;align-items:center;gap:16px;margin-left:auto}
+.legend{display:flex;align-items:center;gap:11px;font-size:9.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.d{width:5px;height:5px;border-radius:50%;display:inline-block;background:#5f7397}
+.d.run{background:var(--cyan);box-shadow:0 0 7px var(--cyan)}
+.d.wait{background:var(--amber);box-shadow:0 0 7px var(--amber)}
+.d.alert{background:var(--red);box-shadow:0 0 7px var(--red)}
+.d.idle{background:#5f7397}
+.hud-btn{display:inline-flex;align-items:center;gap:5px;height:25px;padding:0 8px;border:1px solid var(--line);color:var(--faint);font-size:9px;letter-spacing:.06em;transition:.15s;white-space:nowrap}
+.hud-btn:hover{color:var(--cyan);border-color:var(--line2);background:rgba(90,205,255,.06)}
+.hud-btn span{color:var(--ink)}
+.clock{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.1em;min-width:64px;text-align:right}
+.screen-bracket{position:fixed;width:16px;height:16px;border-color:rgba(120,225,255,.4);z-index:30;pointer-events:none}
+.screen-bracket.tl{left:10px;top:calc(var(--hud-h) + 10px);border-left:1px solid;border-top:1px solid}
+.screen-bracket.tr{right:10px;top:calc(var(--hud-h) + 10px);border-right:1px solid;border-top:1px solid}
+.screen-bracket.bl{left:10px;bottom:10px;border-left:1px solid;border-bottom:1px solid}
+.screen-bracket.br{right:10px;bottom:10px;border-right:1px solid;border-bottom:1px solid}
+

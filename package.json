@@ -1,0 +1,38 @@
+{
+  "name": "stellar-console",
+  "version": "0.1.0",
+  "private": false,
+  "description": "群星交互系统 — 以星系为界面的项目交互中枢 / A galaxy-shaped project console built with Three.js",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/stellar/index.js"
+  },
+  "files": [
+    "src/stellar",
+    "docs"
+  ],
+  "keywords": [
+    "threejs",
+    "webgl",
+    "visualization",
+    "project-management",
+    "black-hole",
+    "galaxy"
+  ],
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "three": "0.187.0"
+  },
+  "devDependencies": {
+    "vite": "8.3.5"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}

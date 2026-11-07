@@ -1,0 +1,17 @@
+/* ---------- 实时调参 ---------- */
+.tune-toggle{position:fixed;right:24px;top:calc(var(--hud-h) + 12px);z-index:38;height:26px;padding:0 10px;border:1px solid var(--line2);background:rgba(3,10,20,.72);color:var(--cyan);font-size:9px;letter-spacing:.08em;backdrop-filter:blur(8px);transition:.15s}
+.tune-toggle:hover{background:rgba(60,160,230,.12)}
+.tune-panel{position:fixed;right:24px;top:calc(var(--hud-h) + 44px);z-index:39;width:292px;max-height:calc(100vh - var(--hud-h) - 60px);overflow:auto;background:linear-gradient(180deg,rgba(4,14,28,.94),rgba(3,10,20,.92));border:1px solid rgba(120,225,255,.35);box-shadow:0 18px 50px rgba(0,0,0,.5),0 0 30px rgba(60,200,255,.06);backdrop-filter:blur(14px);font-size:9px;color:var(--muted);scrollbar-width:thin}
+.tune-panel[hidden]{display:none}
+.tune-panel header{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-bottom:1px solid var(--line);background:rgba(4,14,28,.96);z-index:1}
+.tune-panel header b{font-size:10px;letter-spacing:.1em;color:var(--ink);font-weight:500}
+.tune-actions{display:flex;gap:6px}
+.tune-actions button{font-size:8.5px;color:var(--faint);border:1px solid var(--line);padding:2px 6px;transition:.15s}
+.tune-actions button:hover{color:var(--cyan);border-color:var(--line2)}
+.tune-body{padding:7px 10px 12px}
+.tune-group{margin:10px 0 4px;padding-top:7px;border-top:1px solid rgba(110,200,255,.14);font-family:var(--mono);font-size:7.5px;letter-spacing:.14em;color:var(--cyan2)}
+.tune-group:first-child{margin-top:0;padding-top:0;border-top:0}
+.tune-row{display:grid;grid-template-columns:1fr auto;gap:2px 8px;margin:6px 0;font-size:9px;color:#9fb6d5}
+.tune-row b{font-family:var(--mono);font-weight:400;color:#e8f7ff;font-variant-numeric:tabular-nums}
+.tune-row input{grid-column:1/-1;width:100%;height:12px;margin:0;accent-color:var(--cyan);cursor:pointer}
+@media (max-width:900px){.tune-panel{width:250px;right:12px;top:calc(var(--hud-h) + 44px)}.tune-toggle{right:12px}}

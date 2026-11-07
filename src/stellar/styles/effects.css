@@ -1,0 +1,151 @@
+/* ---------- 06：更透的全息开放版 ---------- */
+.console{
+  background:linear-gradient(180deg,rgba(5,16,30,.40),rgba(3,9,18,.48));
+  backdrop-filter:blur(26px) saturate(1.22);
+  border-color:rgba(130,235,255,.4);
+  box-shadow:0 0 0 1px rgba(60,170,235,.12),0 30px 120px rgba(0,0,0,.6),0 0 120px rgba(60,200,255,.16),inset 0 0 100px rgba(60,200,255,.04);
+}
+.dim{background:rgba(1,4,10,.36);backdrop-filter:blur(5px)}
+.console::before{opacity:.55}
+.console::after{opacity:.45}
+.holo-orb{position:absolute;right:-120px;top:56px;width:660px;height:660px;opacity:.15;z-index:1;pointer-events:none}
+.holo-orb svg{width:100%;height:100%}
+.holo-orb circle,.holo-orb ellipse,.holo-orb path{stroke:rgba(130,235,255,.85);stroke-width:.8;vector-effect:non-scaling-stroke}
+.ch{background:none;border-bottom:1px solid rgba(110,200,255,.18);padding:18px 26px 12px}
+.ch-id{font-size:9px}
+.ch-main h2{font-size:28px;letter-spacing:.08em}
+.c-orb{width:22px;height:22px}
+.ch-data b{font-size:14px}
+.ch-sub{padding:9px 26px;border-bottom:1px solid rgba(110,200,255,.16);font-size:11px}
+.ch-body{grid-template-columns:minmax(0,1fr) 360px}
+.ch-maincol{padding:18px 24px 24px}
+.ch-side{padding:16px 20px;background:none;border-left:1px solid rgba(110,200,255,.18);gap:16px}
+.ch-body::before{content:"";position:absolute;left:0;top:0;bottom:0;width:1px;background:repeating-linear-gradient(180deg,transparent 0 12px,rgba(110,220,255,.2) 12px 13px);pointer-events:none}
+.flow-band{background:none;border:0;border-top:1px solid rgba(110,200,255,.18);border-bottom:1px solid rgba(110,200,255,.12);margin-bottom:12px}
+.flow-head{padding:8px 0;border-bottom:1px solid rgba(110,200,255,.12);font-size:9px}
+#flow{height:120px}
+.goal{background:none;border:0;border-left:2px solid rgba(90,225,255,.65);padding:8px 0 8px 14px;margin-bottom:12px}
+.goal span{font-size:9px}
+.goal p{font-size:15px}
+.sections{gap:12px}
+.sec{background:none;border:0;border-top:1px solid rgba(110,200,255,.22);padding:9px 10px 9px 14px;box-shadow:none}
+.sec:hover{background:rgba(80,200,255,.04);border-color:rgba(125,225,255,.45)}
+.sec::before{top:12px;bottom:12px;width:2px}
+.sec-head h4{font-size:13px}
+.sec-bar{height:1px;margin-bottom:9px}
+.task-copy p{font-size:12px}
+.task-copy small{font-size:10px}
+.miles{border-top:1px solid rgba(110,200,255,.18);margin-top:12px}
+.links-row{border-top:1px solid rgba(110,200,255,.18)}
+.watch{background:none;border:0;border-top:1px solid rgba(110,200,255,.18);border-bottom:1px solid rgba(110,200,255,.12);margin-top:12px}
+.watch header{background:none;border-bottom:1px solid rgba(110,200,255,.12);padding:6px 0}
+.watch-row{padding:6px 0;border-bottom:1px solid rgba(100,185,255,.1)}
+.stream-band{background:none;border:0;border-top:1px solid rgba(110,200,255,.18);padding:8px 0}
+.c-panel{background:none;border:0;border-top:1px solid rgba(110,200,255,.22);padding:10px 0 0}
+.c-panel header{font-size:9px;margin-bottom:9px}
+.c-dec{padding:7px 0;border-bottom:1px solid rgba(100,185,255,.12)}
+.c-idea input{background:rgba(2,8,15,.32);border-color:rgba(100,200,255,.24)}
+.ch-foot{background:none;border-top:1px solid rgba(110,200,255,.18);padding:7px 26px}
+.sec,.goal,.c-panel,.flow-band,.watch,.stream-band{text-shadow:0 0 9px rgba(0,0,0,.85)}
+@media (max-width:900px){
+  .holo-orb{width:480px;height:480px;right:-180px;top:120px;opacity:.08}
+  .ch-main h2{font-size:22px}
+  .ch-body{grid-template-columns:minmax(0,1fr) 300px}
+}
+@media (max-width:760px){
+  .target-card,.leader-layer{display:none}
+  .holo-orb{display:none}
+  .ch-main h2{font-size:19px}
+  .ch-body{grid-template-columns:1fr}
+  .ch-side{border-left:0;border-top:1px solid rgba(110,200,255,.18);padding:14px 12px}
+  .ch-body::before{display:none}
+}
+
+
+
+
+/* 无 backdrop-filter / 低画质 fallback */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){
+  .console{background:rgba(4,14,26,.88)}
+  .target-card{background:rgba(4,14,26,.93)}
+}
+html.low-quality .console,html.low-quality .target-card{backdrop-filter:none;background:rgba(4,14,26,.86)}
+
+/* ---------- 实时调度 / 全息增强 ---------- */
+.dispatch-layer{position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none;overflow:visible}
+.dispatch-layer path{fill:none;stroke-width:2;stroke-dasharray:3 6;opacity:.9;filter:drop-shadow(0 0 5px rgba(90,220,255,.4))}
+.dispatch-layer .packet{filter:drop-shadow(0 0 6px currentColor)}
+.dispatch-layer .core-ring{fill:none;stroke:rgba(140,240,255,.5);stroke-width:.8;opacity:.5}
+.live-strip{
+  position:fixed;left:24px;bottom:16px;z-index:10;display:flex;align-items:center;gap:8px;
+  height:27px;padding:0 10px;background:rgba(3,9,17,.55);border:1px solid rgba(110,210,255,.2);
+  backdrop-filter:blur(8px);font-size:9px;letter-spacing:.05em;color:#a9c6e6;white-space:nowrap;max-width:540px;
+}
+.live-strip b{font-family:var(--mono);font-weight:500;font-size:8px;letter-spacing:.12em;color:var(--cyan)}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:livePulse 1.6s ease-in-out infinite}
+.live-tag{color:#8fa8c8;border-left:1px solid rgba(110,200,255,.18);padding-left:8px}
+.live-text{color:#d9ecff;overflow:hidden;text-overflow:ellipsis;max-width:300px}
+.live-strip em{font-style:normal;font-family:var(--mono);font-size:8px;color:#7f97b7;margin-left:auto}
+@keyframes livePulse{0%,100%{opacity:.45;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+.leader-layer #leaderPacket{fill:#bff8ff;filter:drop-shadow(0 0 7px rgba(120,235,255,1))}
+.boot-status{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:90;
+  padding:10px 16px;background:rgba(3,9,18,.82);border:1px solid rgba(110,220,255,.35);
+  color:#b9d8f2;font-size:12px;letter-spacing:.06em;backdrop-filter:blur(10px);pointer-events:none;
+}
+.boot-status.error{color:#ffb0b8;border-color:rgba(255,100,120,.5);max-width:70vw;white-space:pre-wrap}
+.projector{
+  position:absolute;left:50%;bottom:-8px;width:74%;height:110px;transform:translateX(-50%);
+  background:radial-gradient(ellipse at center,rgba(100,225,255,.20),rgba(60,160,255,.05) 45%,transparent 72%);
+  filter:blur(8px);pointer-events:none;z-index:1;
+}
+.projector::before{
+  content:"";position:absolute;left:50%;bottom:0;width:56%;height:92px;transform:translateX(-50%);
+  background:linear-gradient(180deg,transparent,rgba(100,225,255,.10));
+  clip-path:polygon(50% 0,100% 100%,0 100%);
+}
+.holo-orb{opacity:.19}
+.holo-orb::after{content:"";position:absolute;inset:9%;border:1px dashed rgba(130,235,255,.35);border-radius:50%}
+.ch-main h2{text-shadow:0 0 22px rgba(80,210,255,.5),-1px 0 rgba(255,80,150,.22),1px 0 rgba(80,255,255,.22)}
+.sec-head h4{text-shadow:0 0 12px rgba(80,210,255,.25)}
+.console::before{animation:holoSheen 9s ease-in-out infinite}
+@keyframes holoSheen{0%,100%{opacity:.45;transform:translateX(-1.5%)}50%{opacity:.75;transform:translateX(1.5%)}}
+.console{border-radius:0}
+@media (max-width:760px){
+  .live-strip{display:none}
+  .projector{display:none}
+}
+
+
+/* 核心节点 / 黑洞标签 */
+.star.core-star .planet{display:none}
+.star.core-star .label{top:88px;bottom:auto;transform:translateX(-50%);text-align:center}
+.star.core-star .label b{font-size:15px;letter-spacing:.16em;color:#eaf8ff;text-shadow:0 0 18px rgba(180,225,255,.8),0 0 40px rgba(120,190,255,.4)}
+.star.core-star .label .tag{color:#d7ecff;border-color:rgba(180,225,255,.45);background:rgba(80,140,200,.12);letter-spacing:.14em}
+.star.core-star .fx i{border-color:rgba(210,240,255,.8)}
+.star.core-star[data-focus="true"] .label b{color:#fff}
+
+/* 默认不显示标注，只有选中项目才显示 */
+.star[data-selected="true"] .label{opacity:1!important}
+.star .label{pointer-events:none}
+
+.star .shadow-disc{position:absolute;inset:8%;border-radius:50%;background:radial-gradient(circle,rgba(0,0,0,.62) 0%,rgba(0,0,0,.30) 42%,transparent 70%);filter:blur(6px);pointer-events:none}
+
+
+
+/* 名称：默认隐藏，悬停/选中显示 */
+.star .label{
+  background:rgba(2,8,16,.72);border:1px solid rgba(110,220,255,.28);
+  padding:2px 7px;backdrop-filter:blur(8px);
+  box-shadow:0 4px 18px rgba(0,0,0,.45);
+}
+.star:hover .label{opacity:1!important}
+.star .label b{font-size:13px}
+
+/* 默认绝不显示任何名称；悬停/选中才显示 */
+.star .label{opacity:0!important}
+.star[data-selected="true"] .label,.star[data-focus="true"] .label,.star:hover .label{opacity:1!important}
+
+/* 放弃行星到黑洞的数据线；项目行星只保留呼吸光 */
+.dispatch-layer{display:none!important}
+.star .fx,.star .ring{display:none!important}

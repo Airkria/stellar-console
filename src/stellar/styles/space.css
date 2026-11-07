@@ -1,0 +1,182 @@
+/* ---------- 3D 星图 ---------- */
+.space{position:fixed;inset:var(--hud-h) 0 0;overflow:hidden;cursor:grab;touch-action:none;user-select:none}
+/* 深空氛围与暗角：只做色彩分层，不抢中心 */
+.space::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    linear-gradient(180deg,transparent 33%,rgba(80,120,210,.05) 42%,rgba(160,190,255,.08) 50%,rgba(80,120,210,.05) 58%,transparent 67%),
+    radial-gradient(42% 38% at 16% 72%,rgba(32,104,180,.16),transparent 72%),
+    radial-gradient(36% 34% at 84% 24%,rgba(104,66,180,.16),transparent 74%),
+    radial-gradient(58% 46% at 50% 54%,rgba(28,72,150,.09),transparent 74%);
+  mix-blend-mode:screen;
+}
+.space::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:
+    linear-gradient(180deg,rgba(0,3,9,.24) 0%,transparent 15%,transparent 78%,rgba(0,2,7,.38) 100%),
+    radial-gradient(ellipse at 50% 48%,transparent 30%,rgba(0,2,7,.24) 68%,rgba(0,1,5,.64) 100%);
+}
+.space.dragging{cursor:grabbing}
+#sky{position:absolute;inset:0;width:100%;height:100%;display:block}
+.star-layer{position:absolute;inset:0;z-index:3;pointer-events:none}
+.star-layer.zoomed-out .label{opacity:0!important}
+.star-layer.zoomed-out .fx{opacity:0}
+
+/* 行星锚点 */
+.star{
+  position:absolute;left:0;top:0;width:0;height:0;overflow:visible;
+  background:none;border:0;padding:0;color:var(--ink);
+  pointer-events:none;will-change:transform;
+}
+.star .planet{
+  position:absolute;left:0;top:0;
+  width:calc(var(--halo) * var(--planet-halo,1));height:calc(var(--halo) * var(--planet-halo,1));
+  transform:translate(-50%,-50%) scale(calc(var(--k,1) * var(--grow,1)));
+  transform-origin:center;pointer-events:none;
+}
+.star .halo{
+  position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle,hsla(var(--hue),100%,86%,.82) 0%,hsla(var(--hue),100%,68%,.26) 27%,transparent 66%);
+  filter:blur(4px);animation:pulse 5.5s ease-in-out infinite;
+}
+.star .core{
+  position:absolute;left:50%;top:50%;width:calc(var(--p) * var(--planet-core,1));height:calc(var(--p) * var(--planet-core,1));
+  transform:translate(-50%,-50%);border-radius:50%;
+  background:
+    radial-gradient(circle at 36% 30%,#fff 0 8%,hsla(var(--hue),100%,92%,.95) 26%,hsla(var(--hue),100%,72%) 54%,hsla(var(--hue),95%,48%) 82%,hsla(var(--hue),90%,34%) 100%);
+  box-shadow:0 0 calc(var(--g1) * var(--planet-core,1)) hsla(var(--hue),100%,82%,1),0 0 calc(var(--g2) * var(--planet-core,1)) hsla(var(--hue),100%,66%,.55),0 0 calc(var(--g3) * var(--planet-core,1)) hsla(var(--hue),100%,55%,.2);
+}
+.star .spike{
+  position:absolute;left:50%;top:50%;width:var(--spikeW);height:1px;transform:translate(-50%,-50%);
+  background:linear-gradient(90deg,transparent,hsla(var(--hue),100%,88%,.8),transparent);opacity:.75;
+}
+.star .spike.v{width:1px;height:var(--spikeH);background:linear-gradient(180deg,transparent,hsla(var(--hue),100%,88%,.6),transparent);opacity:.55}
+.star .ring{
+  position:absolute;inset:20%;border-radius:50%;border:1px solid hsla(var(--hue),100%,78%,.32);
+}
+.star .ring.r2{inset:7%;border-style:solid;border-color:hsla(var(--hue),100%,78%,.07)}
+.star[data-state="run"] .ring{animation:spin 18s linear infinite;border-color:hsla(var(--hue),100%,82%,.32)}
+.star .spin{
+  position:absolute;inset:12%;border-radius:50%;pointer-events:none;opacity:0;
+  background:conic-gradient(from 0deg,transparent 0 42%,hsla(var(--hue),100%,85%,.3) 52%,transparent 62%);
+  mask:radial-gradient(circle,transparent 54%,#000 58%);
+  -webkit-mask:radial-gradient(circle,transparent 54%,#000 58%);
+}
+.star[data-state="run"] .spin{opacity:.8;animation:spin 14s linear infinite}
+.star[data-state="wait"] .halo{animation-duration:7s;opacity:.9}
+.star[data-state="alert"] .halo{background:radial-gradient(circle,rgba(255,85,98,.62) 0%,rgba(255,60,72,.2) 28%,transparent 64%);animation:alert 2.2s ease-in-out infinite}
+.star[data-state="alert"] .core{box-shadow:0 0 var(--g1) rgba(255,130,130,1),0 0 var(--g2) rgba(255,70,80,.55),0 0 var(--g3) rgba(255,40,50,.25)}
+.star[data-state="idle"] .halo{opacity:calc(.42 * var(--planet-glow,1));animation-duration:8s}
+.star[data-state="idle"] .core{filter:saturate(.75) brightness(.9)}
+.star[data-state="idle"] .label b{color:#b9c8de}
+.star[data-state="paused"] .label b{color:#9daac0}
+.star[data-state="archived"] .label b{color:#8795ad}
+.star[data-state="paused"] .halo{opacity:calc(.25 * var(--planet-glow,1));animation:none}
+.star[data-state="paused"] .core{opacity:.7;filter:saturate(.55)}
+.star[data-state="archived"] .halo{opacity:calc(.14 * var(--planet-glow,1));animation:none}
+.star[data-state="archived"] .core{opacity:.5;filter:saturate(.35)}
+.star[data-state="archived"] .label{opacity:.72}
+.star[data-state="archived"] .ach,.star[data-state="archived"] .sats{opacity:.35}
+
+.star .ach{position:absolute;inset:0;pointer-events:none}
+.star .ach i{position:absolute;left:50%;top:50%;width:2px;height:2px;border-radius:50%;background:#ffd998;box-shadow:0 0 5px #ffc45c;transform:rotate(calc(var(--a)*1deg)) translateX(calc(var(--achR) * var(--planet-halo,1)));animation:twinkle 3.2s calc(var(--d)*1s) ease-in-out infinite}
+.star .sats{position:absolute;inset:0;pointer-events:none}
+.star .sat{position:absolute;inset:0;animation:spin var(--dur,36s) linear infinite;pointer-events:none}
+.star .sat-ring{position:absolute;left:50%;top:50%;width:calc(var(--satR) * var(--planet-halo,1) * 2);height:calc(var(--satR) * var(--planet-halo,1) * 2);transform:translate(-50%,-50%);border-radius:50%;border:1px dashed hsla(var(--hue),100%,80%,.20);pointer-events:none}
+.star .sat i{position:absolute;left:50%;top:50%;width:3px;height:3px;border-radius:50%;background:hsl(var(--hue) 85% 88%);box-shadow:0 0 8px hsl(var(--hue) 90% 72%);transform:rotate(calc(var(--a)*1deg)) translateX(calc(var(--satR) * var(--planet-halo,1)))}
+.star[data-state="run"] .sat i{box-shadow:0 0 10px hsl(var(--hue) 100% 78%)}
+
+.star .label{opacity:0;transition:opacity .18s;
+  position:absolute;left:0;bottom:var(--labelOffset,70px);
+  transform:translateX(-50%);text-align:center;white-space:nowrap;pointer-events:none;
+  transition:opacity .25s;
+}
+.star .label b{display:inline-block;font-size:12.5px;font-weight:500;letter-spacing:.06em;color:#f2f9ff;text-shadow:0 0 14px #000,0 0 28px #000}
+.star .label .tag{
+  display:inline-block;margin-left:6px;padding:1px 4px;border:1px solid hsla(var(--tag-h),100%,72%,.3);
+  font-family:var(--mono);font-size:7px;letter-spacing:.1em;color:var(--tag);vertical-align:2px;
+}
+.star[data-state="run"]{--tag:var(--cyan);--tag-h:190}
+.star[data-state="wait"]{--tag:var(--amber);--tag-h:38}
+.star[data-state="alert"]{--tag:var(--red);--tag-h:2}
+.star[data-state="idle"],.star[data-state="paused"],.star[data-state="archived"]{--tag:#91a6c8;--tag-h:215}
+
+.star .fx{
+  position:absolute;left:0;top:0;
+  width:var(--fxSize,70px);height:var(--fxSize,70px);
+  transform:translate(-50%,-50%);pointer-events:none;opacity:0;transition:opacity .2s;
+}
+.star .fx i{position:absolute;width:14px;height:14px;border-color:rgba(155,238,255,.95)}
+.star .fx i:nth-child(1){left:0;top:0;border-left:1px solid;border-top:1px solid}
+.star .fx i:nth-child(2){right:0;top:0;border-right:1px solid;border-top:1px solid}
+.star .fx i:nth-child(3){left:0;bottom:0;border-left:1px solid;border-bottom:1px solid}
+.star .fx i:nth-child(4){right:0;bottom:0;border-right:1px solid;border-bottom:1px solid}
+.star[data-focus="true"] .fx,.star:hover .fx{opacity:1}
+.star.flash .core{filter:brightness(1.8)}
+.star.flash .halo{opacity:1;filter:blur(6px) brightness(1.5)}
+.star.edge-right .label{transform:translateX(-100%);text-align:right}
+.star.label-below .label{bottom:auto;top:var(--labelBelow,80px)}
+.star.edge-left .label{transform:translateX(0);text-align:left}
+.star.quiet .label{opacity:0}
+.star.quiet:hover .label,.star.quiet[data-focus="true"] .label{opacity:1}
+.star .hit{position:absolute;left:0;top:0;width:var(--hitSize,46px);height:var(--hitSize,46px);transform:translate(-50%,-50%);border-radius:50%;pointer-events:auto;cursor:pointer}
+/* 运行中的项目：一圈缓慢扩散的生长光 */
+.star[data-state="run"] .planet::after{content:"";position:absolute;left:50%;top:50%;width:calc(var(--p) * 5.2);height:calc(var(--p) * 5.2);transform:translate(-50%,-50%);border-radius:50%;border:1px solid hsla(var(--hue),100%,86%,.30);animation:coreRipple calc(4.2s / var(--planet-ripple,1)) ease-out infinite;pointer-events:none}
+@keyframes coreRipple{0%{opacity:0;transform:translate(-50%,-50%) scale(.75)}25%{opacity:.55}100%{opacity:0;transform:translate(-50%,-50%) scale(1.65)}}
+
+/* 3D 项目本体：DOM 只保留标签/命中/扩散涟漪 */
+.star.body3d .planet .halo,
+.star.body3d .planet .core,
+.star.body3d .planet .spike,
+.star.body3d .planet .ring,
+.star.body3d .planet .spin,
+.star.body3d .planet .ach,
+.star.body3d .planet .sats,
+.star.body3d .planet .shadow-disc{display:none!important}
+
+/* 目标数据卡 */
+.target-card{
+  position:absolute;left:0;top:0;width:276px;z-index:12;will-change:transform;
+  padding:12px 14px 13px;pointer-events:none;
+  background:linear-gradient(160deg,rgba(8,24,44,.72),rgba(4,13,26,.56));
+  border:1px solid rgba(120,225,255,.52);
+  box-shadow:0 0 0 1px rgba(60,170,230,.1),0 18px 50px rgba(0,0,0,.45),0 0 40px rgba(60,200,255,.08),inset 0 0 30px rgba(60,200,255,.04);
+  backdrop-filter:blur(14px) saturate(1.2);
+  transition:opacity .2s;
+}
+.target-card::before{content:"";position:absolute;left:-1px;top:-1px;width:14px;height:14px;border-left:1px solid var(--cyan);border-top:1px solid var(--cyan)}
+.target-card::after{content:"";position:absolute;right:14px;top:0;left:14px;height:1px;background:linear-gradient(90deg,transparent,rgba(120,230,255,.5),transparent)}
+.target-card.empty{opacity:0}
+.leader-layer{position:absolute;inset:0;width:100%;height:100%;z-index:11;pointer-events:none;overflow:visible}
+.leader-layer path{fill:none;stroke:rgba(140,240,255,.8);stroke-width:1;stroke-dasharray:3 4;filter:drop-shadow(0 0 5px rgba(90,220,255,.55))}
+.leader-layer #leaderDot{fill:#c8fbff;filter:drop-shadow(0 0 6px rgba(120,235,255,.9))}
+.leader-layer #leaderDot2{fill:none;stroke:rgba(160,240,255,.7);stroke-width:1}
+.tc-code{font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;color:var(--cyan2)}
+.tc-title{font-size:17px;font-weight:500;letter-spacing:.06em;margin-top:3px;color:#f4faff;text-shadow:0 0 16px rgba(90,210,255,.3)}
+.tc-sub{font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:#8fa7c8;margin-top:2px}
+.tc-phase{font-size:10px;line-height:1.5;color:#b6cbe6;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:9px;padding-top:8px;border-top:1px solid var(--line)}
+.tc-grid i{display:block;font-style:normal;font-family:var(--mono);font-size:6.5px;letter-spacing:.12em;color:var(--faint)}
+.tc-grid b{display:block;font-family:var(--mono);font-size:12px;font-weight:500;color:#e9f7ff;margin-top:2px}
+.tc-status{display:flex;justify-content:space-between;align-items:center;margin-top:9px;font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:var(--tag,var(--cyan))}
+.tc-status b{font-weight:500;color:#a9c4e4}
+
+.view-hint{
+  pointer-events:none;
+  position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:10;
+  padding:5px 11px;font-size:9.5px;letter-spacing:.06em;color:#8fa8c9;
+  background:rgba(3,9,17,.55);border:1px solid var(--line);backdrop-filter:blur(8px);
+  transition:opacity .3s;
+}
+.reset-view{
+  position:fixed;right:24px;bottom:16px;z-index:10;height:27px;padding:0 10px;
+  border:1px solid var(--line);background:rgba(3,9,17,.55);color:#9fb8d8;
+  font-size:9.5px;letter-spacing:.08em;backdrop-filter:blur(8px);transition:.15s;
+}
+.reset-view:hover{color:var(--cyan);border-color:var(--line2);background:rgba(60,160,230,.08)}
+
+@keyframes pulse{0%,100%{transform:scale(.93);opacity:calc(.6 * var(--planet-glow,1))}50%{transform:scale(1.07);opacity:calc(1 * var(--planet-glow,1))}}
+@keyframes alert{0%,100%{opacity:calc(.65 * var(--planet-glow,1));transform:scale(.96)}50%{opacity:calc(1 * var(--planet-glow,1));transform:scale(1.05)}}
+@keyframes spin{to{transform:rotate(1turn)}}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:.95}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes consoleIn{from{opacity:0;transform:perspective(2200px) rotateX(.6deg) scale(.975)}to{opacity:1;transform:perspective(2200px) rotateX(.35deg) scale(1)}}
+
