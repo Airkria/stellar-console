@@ -43,7 +43,7 @@ export function createTunePanel(app) {
       } else if (type === 'color') {
         html += `<label class="tune-row tune-color"><span>${c.label}</span><input type="color" data-tune="${c.key}" value="${esc(tuning.tune[c.key])}"></label>`;
       } else if (type === 'file') {
-        html += `<label class="tune-row tune-file"><span>${c.label}</span><button type="button" class="tune-file-btn" data-file-btn="${c.key}">选择…</button><input type="file" accept="image/*" data-file="${c.key}" hidden></label>`;
+        html += `<div class="tune-row tune-file"><span>${c.label}</span><button type="button" class="tune-file-btn" data-file-btn="${c.key}">选择…</button><input type="file" accept="image/*" data-file="${c.key}" hidden></div>`;
       } else {
         const dec = c.dec ?? 2;
         html += `<label class="tune-row"><span>${c.label}</span><b data-tune-val="${c.key}">${Number(tuning.tune[c.key]).toFixed(dec)}</b><input type="range" data-tune="${c.key}" min="${c.min}" max="${c.max}" step="${c.step}" value="${tuning.tune[c.key]}"></label>`;

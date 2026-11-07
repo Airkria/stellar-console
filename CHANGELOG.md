@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1 — 2026-11-08
+
+- The image-picker row is no longer a `<label>`, so clicking `选择…` opens a
+  single system file dialog instead of potentially triggering the wrapped
+  input twice.
+
 ## 0.5.0 — 2026-11-08
 
 - Removed the procedural lensed sky from the black-hole pass; the scene texture
