@@ -47,7 +47,7 @@ export function createProjection(app) {
       el.style.setProperty('--planet-halo', String(app.tune[`planetHalo_${p.id}`] ?? 1));
       el.style.setProperty('--labelOffset', `${(p.halo * 0.5 * k + 10).toFixed(1)}px`);
       el.style.setProperty('--labelBelow', p.core ? '88px' : `${(p.halo * 0.5 * k + 14).toFixed(1)}px`);
-      el.style.setProperty('--hitSize', p.core ? '300px' : Math.min(260, Math.max(46, p.halo * 0.62 * k)).toFixed(1) + 'px');
+      el.style.setProperty('--hitSize', p.core ? '140px' : Math.min(260, Math.max(46, p.halo * 0.62 * k)).toFixed(1) + 'px');
 
       const baseOpacity = p.state === 'archived' ? 0.5 : p.state === 'paused' ? 0.62 : p.state === 'idle' ? 0.82 : 1;
       // Solid occlusion: bodies nearer than the hole are composited after the

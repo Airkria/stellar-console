@@ -141,14 +141,23 @@ await sleep(200);
 check('star skin applied', await evaluate('stellarConsole.data.projects.find((p) => p.id === "orion").starSkin'), 'classic');
 
 // Two-step activation: first click selects, second click opens.
+// Use real pointer events so the scene pointerup fallback is covered too.
+async function realClick(project) {
+  const pos = await evaluate(
+    `(() => { const r = document.querySelector('.star[data-project=${project}] .hit').getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; })()`,
+  );
+  await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: pos.x, y: pos.y });
+  await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: pos.x, y: pos.y, button: 'left', clickCount: 1 });
+  await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: pos.x, y: pos.y, button: 'left', clickCount: 1 });
+}
 await evaluate('stellarConsole.selectProject(null)');
-await evaluate('document.querySelector(".star[data-project=lyra] .hit").click()');
-await sleep(120);
+await realClick('lyra');
+await sleep(150);
 check('first click selects', await evaluate('document.querySelector(".star[data-project=lyra]").dataset.selected'), 'true');
 check('first click stays closed', await evaluate('document.querySelector("#overlay").hidden'), true);
 check('first click shows card', await evaluate('document.querySelector("#targetCard").classList.contains("empty")'), false);
-await evaluate('document.querySelector(".star[data-project=lyra] .hit").click()');
-await sleep(200);
+await realClick('lyra');
+await sleep(250);
 check('second click opens', await evaluate('document.querySelector("#overlay").hidden'), false);
 await evaluate('stellarConsole.closeProject()');
 

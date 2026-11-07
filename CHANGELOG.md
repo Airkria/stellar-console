@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.1 — 2026-11-08
+
+- Fixed the scene pointerup fallback still opening the console on the first
+  click. It now goes through `activateProject`, so first click selects and the
+  second click opens.
+- Reduced the core (NAS) hit area from 300px to 140px so it no longer swallows
+  clicks on nearby projects such as AssetHub.
+- The smoke test now drives real pointer events instead of synthetic `.click()`,
+  covering both the DOM and scene pointerup paths.
+
 ## 0.6.0 — 2026-11-08
 
 - Two-step project activation: the first click selects a project and shows the

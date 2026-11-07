@@ -315,10 +315,7 @@ export function createScene(app) {
         const project = app.byId(el.dataset.project);
         if (!project) return;
         app.suppressClickUntil = performance.now() + 160;
-        app.state.selected = project.id;
-        app.renderTarget(project);
-        app.setFocus();
-        app.openProject(project.id, el);
+        app.activateProject(project.id, el);
         return;
       }
       if (dx + dy > 6) return;
