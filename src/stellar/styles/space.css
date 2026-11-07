@@ -8,6 +8,8 @@
     radial-gradient(36% 34% at 84% 24%,rgba(104,66,180,.16),transparent 74%),
     radial-gradient(58% 46% at 50% 54%,rgba(28,72,150,.09),transparent 74%);
   mix-blend-mode:screen;
+  opacity:var(--space-glow,1);
+  transition:opacity .2s;
 }
 .space::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
   background:

@@ -148,6 +148,13 @@ export function createScene(app) {
     S.blackHole = blackHole;
     blackHole.buildPass();
 
+    // Projects closer to the camera than the black hole are rendered after the
+    // BH pass, so they occlude it; projects behind stay in the main scene and
+    // are occluded by it. The two roots share the same rotation.
+    refs.frontScene = new THREE.Scene();
+    refs.frontRoot = new THREE.Group();
+    refs.frontScene.add(refs.frontRoot);
+
     S.planetGroup = new THREE.Group();
     S.galaxyGroup.add(S.planetGroup);
     for (const p of app.data.projects) {
@@ -166,12 +173,19 @@ export function createScene(app) {
     S.composer.setSize(S.VW, S.VH);
     S.composer.addPass(new RenderPass(S.scene, S.camera));
     if (refs.bhPass) S.composer.addPass(refs.bhPass);
+    if (refs.frontScene) {
+      const frontPass = new RenderPass(refs.frontScene, S.camera);
+      frontPass.clear = false;
+      S.composer.addPass(frontPass);
+      refs.frontPass = frontPass;
+    }
     if (!S.low) {
       refs.bloomPass = new UnrealBloomPass(new THREE.Vector2(S.VW, S.VH), 0.1, 0.45, 0.97);
       S.composer.addPass(refs.bloomPass);
     }
 
     S.clock = new THREE.Clock();
+    refs.inflowTime = 0;
     $('#leaderLayer')?.setAttribute('viewBox', `0 0 ${S.VW} ${S.VH}`);
     const boot = $('#bootStatus');
     if (boot) boot.style.display = 'none';
@@ -186,9 +200,13 @@ export function createScene(app) {
 
     if (app.state.motion && !app.state.backgroundPaused) {
       S.galaxyGroup.rotation.y += dt * 0.012;
+      if (refs.riverGroup) refs.riverGroup.rotation.y += dt * 0.004 * (app.tune.riverSpeed || 0);
       if (refs.deepGroup) refs.deepGroup.rotation.y -= dt * 0.0022;
       if (refs.dustMaterial) refs.dustMaterial.uniforms.uTime.value = now * 0.001;
-      if (refs.inflowMaterial) refs.inflowMaterial.uniforms.uTime.value = now * 0.001;
+      if (refs.inflowMaterial) {
+        refs.inflowTime = (refs.inflowTime || 0) + dt * (app.tune.inflowSpeed || 0);
+        refs.inflowMaterial.uniforms.uTime.value = refs.inflowTime;
+      }
       if (refs.deepMaterial) refs.deepMaterial.uniforms.uTime.value = now * 0.001;
       S.needsRender = true;
     }

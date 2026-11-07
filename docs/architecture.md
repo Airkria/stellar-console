@@ -42,15 +42,17 @@
 ## 渲染管线
 
 ```
-RenderPass(scene, camera)          银河、尘埃、入流、星河、远景星、星云、项目恒星/卫星
+RenderPass(scene, camera)          银河、尘埃、入流、星河、远景星、星云、黑洞后方的项目
   ↓
 黑 hole ShaderPass                 全屏 Schwarzschild 光线追踪 + 吸积盘
+  ↓
+RenderPass(frontScene, clear=false) 黑洞前方的项目恒星/卫星
   ↓
 UnrealBloomPass                    辉光（低画质时跳过）
 ```
 
 - 银河与项目锚点共享 `galaxyGroup`，因此整体一起旋转。
-- 项目恒星 / 卫星与银河在同一个场景里；黑洞 pass 会真实遮挡它们，吸积盘也会覆盖前方星体。相应地，DOM 标签在黑洞阴影范围内淡出，隐藏的项目需要旋转视角才能点到。
+- 项目恒星 / 卫星按到相机的距离分成前后两层：比黑洞远的留在主场景，被黑洞 pass 遮挡；比黑洞近的在 pass 之后合成，覆盖黑洞。DOM 标签只在项目位于黑洞后方时随阴影淡出。
 - DOM 星体层每帧由 `projection.update()` 同步到屏幕坐标，并计算黑洞遮挡。
 
 ## 坐标

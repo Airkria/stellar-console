@@ -18,6 +18,7 @@ export function createBodies(app, S, refs) {
   function clear() {
     if (!refs.bodyGroup) return;
     for (const entry of refs.projectBodies) {
+      entry.group.parent?.remove(entry.group);
       entry.star.dispose();
       for (const orbit of entry.orbits) {
         orbit.planet.dispose();
@@ -25,7 +26,9 @@ export function createBodies(app, S, refs) {
         orbit.ringMaterial.dispose();
       }
     }
-    S.galaxyGroup?.remove(refs.bodyGroup);
+    refs.frontRoot?.clear?.();
+    S.galaxyGroup?.remove(refs.backRoot);
+    refs.backRoot = null;
     refs.bodyGroup = null;
     refs.projectBodies = [];
   }
@@ -34,9 +37,11 @@ export function createBodies(app, S, refs) {
     clear();
     if (!glowTexture) glowTexture = makeGlowTexture('rgba(255,255,255,1)', 'rgba(255,210,170,.55)');
 
-    const bodyGroup = new THREE.Group();
-    S.galaxyGroup.add(bodyGroup);
-    refs.bodyGroup = bodyGroup;
+    const backRoot = new THREE.Group();
+    S.galaxyGroup.add(backRoot);
+    refs.backRoot = backRoot;
+    refs.bodyGroup = backRoot;
+    refs.frontRoot?.clear?.();
     refs.projectBodies = [];
 
     for (const p of app.data.projects) {
@@ -46,7 +51,7 @@ export function createBodies(app, S, refs) {
       const baseColor = new THREE.Color().setHSL(p.hue / 360, 0.85, 0.6);
       const group = new THREE.Group();
       group.position.set(p.x, 0.035, p.y);
-      bodyGroup.add(group);
+      backRoot.add(group);
 
       // --- star ---------------------------------------------------------
       const starGroup = new THREE.Group();
@@ -116,6 +121,8 @@ export function createBodies(app, S, refs) {
         star,
         baseRadius,
         orbits,
+        inFront: false,
+        worldPos: new THREE.Vector3(),
       });
     }
   }
@@ -124,9 +131,21 @@ export function createBodies(app, S, refs) {
     if (!refs.bodyGroup) return;
     const t = now * 0.001;
     const tune = app.tune;
+    if (refs.frontRoot && S.galaxyGroup) refs.frontRoot.rotation.y = S.galaxyGroup.rotation.y;
+    const holeDistance = S.camera ? S.camera.position.length() : 0;
 
     for (const entry of refs.projectBodies) {
       const p = entry.p;
+      // Solid occlusion: move the project between the pre-BH scene and the
+      // post-BH overlay depending on whether it is nearer than the hole.
+      entry.group.getWorldPosition(entry.worldPos);
+      const inFront = !!S.camera && S.camera.position.distanceTo(entry.worldPos) < holeDistance - 0.01;
+      if (inFront !== entry.inFront) {
+        const root = inFront ? refs.frontRoot : refs.backRoot;
+        root?.add(entry.group);
+        entry.group.position.set(p.x, 0.035, p.y);
+        entry.inFront = inFront;
+      }
       const halo = tune[`planetHalo_${p.id}`] ?? 1;
       const stateAlpha = STATE_ALPHA[p.state] ?? 1;
       const activity = STATE_ACTIVITY[p.state] ?? 1;
@@ -139,6 +158,9 @@ export function createBodies(app, S, refs) {
         halo,
         glowStrength: tune.planetGlow,
         activity,
+        cloudThickness: tune.starCloudThickness,
+        cloudEdge: tune.starCloudEdge,
+        cloudInner: tune.starCloudInner,
       });
 
       for (const orbit of entry.orbits) {

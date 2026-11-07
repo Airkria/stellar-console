@@ -467,22 +467,23 @@ export function createGalaxy({ scene, galaxyGroup, starTexture, refs }) {
     const points = new THREE.Points(geo, mat);
     points.frustumCulled = false;
     points.renderOrder = 1;
-    galaxyGroup.add(points);
+    refs.riverGroup = new THREE.Group();
+    refs.riverGroup.add(points);
+    galaxyGroup.add(refs.riverGroup);
   }
 
   function buildGalaxyAura() {
     const tex = makeGlowTexture('rgba(205,226,255,1)', 'rgba(110,160,240,.42)');
-    const sprite = new THREE.Sprite(
-      new THREE.SpriteMaterial({
-        map: tex,
-        blending: THREE.AdditiveBlending,
-        transparent: true,
-        depthWrite: false,
-        depthTest: false,
-        opacity: 0.07,
-        toneMapped: false,
-      }),
-    );
+    refs.auraMaterial = new THREE.SpriteMaterial({
+      map: tex,
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+      depthWrite: false,
+      depthTest: false,
+      opacity: 0.07,
+      toneMapped: false,
+    });
+    const sprite = new THREE.Sprite(refs.auraMaterial);
     sprite.scale.set(22, 22, 1);
     sprite.renderOrder = -3;
     scene.add(sprite);
@@ -500,6 +501,7 @@ export function createGalaxy({ scene, galaxyGroup, starTexture, refs }) {
     const texCache = new Map();
     const group = new THREE.Group();
     group.renderOrder = -4;
+    refs.nebulaMaterials = [];
     for (const d of defs) {
       const key = d.c.join('|');
       let tex = texCache.get(key);
@@ -507,17 +509,17 @@ export function createGalaxy({ scene, galaxyGroup, starTexture, refs }) {
         tex = makeGlowTexture(d.c[0], d.c[1]);
         texCache.set(key, tex);
       }
-      const sprite = new THREE.Sprite(
-        new THREE.SpriteMaterial({
-          map: tex,
-          blending: THREE.AdditiveBlending,
-          transparent: true,
-          depthWrite: false,
-          depthTest: false,
-          opacity: d.o,
-          toneMapped: false,
-        }),
-      );
+      const material = new THREE.SpriteMaterial({
+        map: tex,
+        blending: THREE.AdditiveBlending,
+        transparent: true,
+        depthWrite: false,
+        depthTest: false,
+        opacity: d.o,
+        toneMapped: false,
+      });
+      refs.nebulaMaterials.push({ material, baseOpacity: d.o });
+      const sprite = new THREE.Sprite(material);
       sprite.position.set(d.p[0], d.p[1], d.p[2]);
       sprite.scale.set(d.s, d.s, 1);
       sprite.renderOrder = -4;

@@ -70,7 +70,7 @@ vec3 silverPalette(float r) { ... }
 
 ```glsl
 float phi = atan(p.z, p.x);
-vec2 baseUv = vec2(phi / 6.2831853 * 9.0, log(max(rr, 1.0)) * 1.35);
+vec2 baseUv = vec2(phi / 6.2831853 * uFlowTilingX, log(max(rr, 1.0)) * uFlowTilingY);
 vec2 drift = vec2(uFlowX, uFlowY) * uTime * 0.75;
 vec2 uv1 = baseUv + drift + warp * 0.22;
 vec2 uv2 = baseUv * vec2(1.9, 1.6) + drift * 1.7 + vec2(3.7, 1.9) + warp * 0.35;
@@ -83,6 +83,7 @@ d *= mix(0.04, 1.0, flow);
 - **X / Y 独立平移**：`uFlowX` 绕盘方向移动，`uFlowY` 沿 `log(r)` 内外移动。两者速度不同时，云团会被拉长，产生“拉伸”的流动感。
 - **不再做差速旋转**：旧实现用 `ω(r)` 做角向平流 + 径向漂移，低速度时容易退化成同心细线；现在只做两层不同尺度的 UV 平移 + 轻微 domain warp。
 - **云层密度**：`uCloudDensity` 把噪声阈值从 0.78（稀疏云团）压到 0.08（几乎铺满），控制的是覆盖率，不是亮度。
+- `uFlowTilingX/Y` 控制两个方向的平铺次数；横向越高云团越碎，纵向越高径向层次越密。
 - 速度为 0 时云层完全冻结，不会继续漂移。
 - 盘内背景被压到 `0.12`，让空隙看起来是黑的。
 - 这是视觉平流模拟，不是 Navier–Stokes 解。
@@ -101,6 +102,7 @@ float ring = exp(-pow((b - 2.598) / aa, 2.0));
 - 光线逃逸后，用偏折后的方向采样程序化星空 `lensedSky(d)`，并与原始场景纹理混合。
 - 盘内区域把背景压暗到 `0.12`，避免星系核心比吸积盘还亮。
 - `outCol = diskOut + bg * trans`：盘面发光叠加经过吸收后的背景。
+- `uSpaceGlow = 0` 时，透镜天空与背景下限一起归零；配合纯色黑色背景可以得到真正的纯黑，只剩吸积盘、光子环和前景星体。
 - DOM 项目标签的遮挡由 `projection.js` 单独计算：项目在黑洞后方且屏幕距离小于阴影半径时淡出。
 
 ## Uniforms
@@ -120,6 +122,8 @@ float ring = exp(-pow((b - 2.598) / aa, 2.0));
 | `uRing` | 光子环强度 | 1.2 |
 | `uCloudDensity` | 云层覆盖率 | 0.55 |
 | `uFlowX` / `uFlowY` | 横向 / 纵向移动速度 | 0.12 / 0.05 |
+| `uFlowTilingX` / `uFlowTilingY` | 横向 / 纵向平铺次数 | 9.0 / 1.35 |
+| `uSpaceGlow` | 透镜天空与背景下限亮度 | 1.0 |
 | `uFlowMap` / `uFlowMap2` | 两张 fBm 纹理 | 运行时生成 |
 
 ## 性能

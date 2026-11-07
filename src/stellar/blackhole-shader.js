@@ -30,6 +30,9 @@ export const blackHoleShader = {
     uCloudDensity: { value: 0.55 },
     uFlowX: { value: 0.12 },
     uFlowY: { value: 0.05 },
+    uFlowTilingX: { value: 9.0 },
+    uFlowTilingY: { value: 1.35 },
+    uSpaceGlow: { value: 1.0 },
     uFlowMap: { value: null },
     uFlowMap2: { value: null },
   },
@@ -65,6 +68,9 @@ export const blackHoleShader = {
     uniform float uCloudDensity;
     uniform float uFlowX;
     uniform float uFlowY;
+    uniform float uFlowTilingX;
+    uniform float uFlowTilingY;
+    uniform float uSpaceGlow;
     uniform sampler2D uFlowMap;
     uniform sampler2D uFlowMap2;
 
@@ -136,7 +142,7 @@ export const blackHoleShader = {
       // The two axes translate independently, so a speed ratio stretches the
       // clouds instead of producing concentric rings.
       float phi = atan(p.z, p.x);
-      vec2 baseUv = vec2(phi / 6.2831853 * 9.0, log(max(rr, 1.0)) * 1.35);
+      vec2 baseUv = vec2(phi / 6.2831853 * uFlowTilingX, log(max(rr, 1.0)) * uFlowTilingY);
       vec2 drift = vec2(uFlowX, uFlowY) * uTime * 0.75;
       // A gentle domain warp keeps the texture from reading as a tiled sheet.
       vec2 warp = vec2(
@@ -235,8 +241,8 @@ export const blackHoleShader = {
       } else {
         vec3 d = normalize(vel);
         float skyAmt = smoothstep(5.0, 2.8, b);
-        vec3 bg = mix(here, lensedSky(d), skyAmt);
-        bg = max(bg, vec3(0.006, 0.010, 0.022));
+        vec3 bg = mix(here, lensedSky(d) * uSpaceGlow, skyAmt);
+        bg = max(bg, vec3(0.006, 0.010, 0.022) * uSpaceGlow);
         // The galaxy core is much brighter than the disk; suppress it locally
         // so the silver plasma reads as the volume, not a white cut-out.
         bg *= mix(0.12, 1.0, smoothstep(uDiskIn, uDiskOut * 1.15, b));

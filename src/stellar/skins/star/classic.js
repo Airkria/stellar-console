@@ -51,13 +51,24 @@ export function createClassicStar({ radius, color, glowTexture }) {
   glow.scale.setScalar(glowBase);
   group.add(glow);
 
-  function update(t, { stateAlpha = 1, halo = 1, glowStrength = 1 } = {}) {
+  function update(
+    t,
+    {
+      stateAlpha = 1,
+      halo = 1,
+      glowStrength = 1,
+      cloudThickness = 1,
+      cloudEdge = 1,
+      cloudInner = 1,
+    } = {},
+  ) {
     material.uniforms.uTime.value = t;
-    material.uniforms.uDim.value = stateAlpha;
+    material.uniforms.uDim.value = stateAlpha * (0.7 + 0.3 * cloudInner);
     mesh.rotation.y = t * 0.12;
     const pulse = 1 + 0.05 * Math.sin(t * 1.25 + radius * 30);
-    glow.scale.setScalar(glowBase * halo * pulse);
-    glow.material.opacity = 0.32 * glowStrength * stateAlpha * (0.92 + 0.08 * Math.sin(t * 1.25 + radius * 30));
+    glow.scale.setScalar(glowBase * halo * pulse * (0.6 + 0.6 * cloudThickness));
+    glow.material.opacity =
+      0.32 * glowStrength * stateAlpha * (0.35 + 0.65 * cloudEdge) * (0.92 + 0.08 * Math.sin(t * 1.25 + radius * 30));
   }
 
   function dispose() {

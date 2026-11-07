@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.0 — 2026-11-07
+
+- Added independent X/Y cloud tiling (`flowTilingX` / `flowTilingY`) on top of
+  density and flow speed.
+- Added `inflowSpeed` for the infalling particle stream and `riverSpeed` for the
+  outer star-river rotation.
+- Added `starCloudThickness`, `starCloudEdge` and `starCloudInner` controls for
+  the star's glowing cloud (both classic and sun skins).
+- Fixed black-hole occlusion: project bodies nearer than the hole are composited
+  after the BH pass and cover it; bodies behind are occluded by it. DOM labels
+  follow the same depth rule.
+- Added `spaceGlow` master control. Setting it to 0 removes the CSS nebula,
+  galaxy haze, distant stars and lensed sky, so a pure-black backdrop is actually
+  black.
+
 ## 0.2.1 — 2026-11-07
 
 - Flow textures are generated at 512² to reduce visible repetition at high speeds.
