@@ -60,10 +60,9 @@ URL 一次性覆盖：
 
 | 键 | 说明 | 默认 |
 | --- | --- | --- |
-| `planetGlow` | 项目光晕亮度 / 耀斑强度 | 1.0 |
+| `planetGlow` | 项目光晕亮度（光罩/粒子整体亮度） | 1.0 |
 | `planetCore` | 3D 恒星核心大小 | 1.0 |
 | `starScale` | 恒星整体大小 | 1.0 |
-| `planetRipple` | 运行扩散光频率（CSS 动画时长） | 1.0 |
 | `planetHalo_<id>` | 单个项目光晕大小，按项目自动生成 | 1.0 |
 
 ## 光罩（Fresnel shell）
@@ -80,8 +79,8 @@ URL 一次性覆盖：
 | 键 | 说明 | 默认 |
 | --- | --- | --- |
 | `starParticleCount` | 粒子数量，0–1400 | 520 |
-| `starParticleSpeed` | 粒子出生时的外扩速度 | 1.0 |
-| `starParticleDrag` | 阻力；越大越早被拉回表面 | 1.0 |
+| `starParticleSpeed` | 粒子出生时的外扩速度，0–10 | 1.0 |
+| `starParticleDrag` | 阻力，0–10；越大越早被拉回表面 | 1.0 |
 | `starParticleSize` | 粒子大小 | 1.0 |
 | `starParticleBrightness` | 粒子亮度 | 1.0 |
 

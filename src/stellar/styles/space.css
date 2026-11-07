@@ -28,12 +28,6 @@
   background:none;border:0;padding:0;color:var(--ink);
   pointer-events:none;will-change:transform;
 }
-.star .planet{
-  position:absolute;left:0;top:0;
-  width:calc(var(--halo) * var(--planet-halo,1));height:calc(var(--halo) * var(--planet-halo,1));
-  transform:translate(-50%,-50%) scale(calc(var(--k,1) * var(--grow,1)));
-  transform-origin:center;pointer-events:none;
-}
 .star .halo{
   position:absolute;inset:0;border-radius:50%;
   background:radial-gradient(circle,hsla(var(--hue),100%,86%,.82) 0%,hsla(var(--hue),100%,68%,.26) 27%,transparent 66%);
@@ -121,18 +115,8 @@
 .star.quiet:hover .label,.star.quiet[data-focus="true"] .label{opacity:1}
 .star .hit{position:absolute;left:0;top:0;width:var(--hitSize,46px);height:var(--hitSize,46px);transform:translate(-50%,-50%);border-radius:50%;pointer-events:auto;cursor:pointer}
 /* 运行中的项目：一圈缓慢扩散的生长光 */
-.star[data-state="run"] .planet::after{content:"";position:absolute;left:50%;top:50%;width:calc(var(--p) * 5.2);height:calc(var(--p) * 5.2);transform:translate(-50%,-50%);border-radius:50%;border:1px solid hsla(var(--hue),100%,86%,.30);animation:coreRipple calc(4.2s / var(--planet-ripple,1)) ease-out infinite;pointer-events:none}
-@keyframes coreRipple{0%{opacity:0;transform:translate(-50%,-50%) scale(.75)}25%{opacity:.55}100%{opacity:0;transform:translate(-50%,-50%) scale(1.65)}}
 
 /* 3D 项目本体：DOM 只保留标签/命中/扩散涟漪 */
-.star.body3d .planet .halo,
-.star.body3d .planet .core,
-.star.body3d .planet .spike,
-.star.body3d .planet .ring,
-.star.body3d .planet .spin,
-.star.body3d .planet .ach,
-.star.body3d .planet .sats,
-.star.body3d .planet .shadow-disc{display:none!important}
 
 /* 目标数据卡 */
 .target-card{

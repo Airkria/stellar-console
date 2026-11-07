@@ -168,4 +168,4 @@ registerPlanetSkin('crystal', {
 | `focused` | 当前悬停 / 选中 |
 | `halo` | 该项目的 `planetHalo_<id>` 调参值 |
 | `glowStrength` | 全局 `planetGlow` |
-| `activity` | 由 `state` 推导的活动强度，用于火焰 / 耀斑频率 |
+| `activity` | 由 `state` 推导的活动强度，用于粒子发射亮度 |

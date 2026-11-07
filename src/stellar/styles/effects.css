@@ -118,7 +118,6 @@ html.low-quality .console,html.low-quality .target-card{backdrop-filter:none;bac
 
 
 /* 核心节点 / 黑洞标签 */
-.star.core-star .planet{display:none}
 .star.core-star .label{top:88px;bottom:auto;transform:translateX(-50%);text-align:center}
 .star.core-star .label b{font-size:15px;letter-spacing:.16em;color:#eaf8ff;text-shadow:0 0 18px rgba(180,225,255,.8),0 0 40px rgba(120,190,255,.4)}
 .star.core-star .label .tag{color:#d7ecff;border-color:rgba(180,225,255,.45);background:rgba(80,140,200,.12);letter-spacing:.14em}

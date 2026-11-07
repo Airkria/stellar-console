@@ -3,11 +3,11 @@ import { NOISE_GLSL, SURFACE_VERTEX_GLSL } from '../glsl.js';
 import { createGlowShell } from './glow-shell.js';
 
 /**
- * Sun skin: granulated plasma surface, a hot corona particle shell and
- * occasional expanding flares. Activity follows the project state, so a
- * running project visibly breathes and erupts more than a paused one.
+ * Sun skin: granulated plasma surface, a Fresnel light shell and a glow-cloud
+ * particle shell. Activity follows the project state, so a running project
+ * emits more particles than a paused one.
  */
-export function createSunStar({ radius, glowTexture }) {
+export function createSunStar() {
   const group = new THREE.Group();
 
   const geometry = new THREE.SphereGeometry(1, 48, 32);
@@ -135,33 +135,10 @@ export function createSunStar({ radius, glowTexture }) {
   const corona = new THREE.Points(coronaGeo, coronaMat);
   group.add(corona);
 
-  // Flares: expanding additive sprites with staggered, activity-scaled cycles.
-  const flares = [];
-  const flareDirs = [];
-  for (let i = 0; i < 4; i++) {
-    const d = new THREE.Vector3().randomDirection();
-    flareDirs.push(d);
-    const sprite = new THREE.Sprite(
-      new THREE.SpriteMaterial({
-        map: glowTexture,
-        color: new THREE.Color().setHSL(0.055 + i * 0.012, 1.0, 0.62),
-        transparent: true,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-        depthTest: false,
-        opacity: 0,
-        toneMapped: false,
-      }),
-    );
-    group.add(sprite);
-    flares.push({ sprite, phase: Math.random(), speed: 0.085 + i * 0.018 });
-  }
-
   function update(
     t,
     {
       stateAlpha = 1,
-      focused = false,
       halo = 1,
       glowStrength = 1,
       activity = 1,
@@ -184,28 +161,19 @@ export function createSunStar({ radius, glowTexture }) {
     coronaMat.uniforms.uSpeed.value = particleSpeed;
     coronaMat.uniforms.uDrag.value = particleDrag;
     coronaMat.uniforms.uSize.value = particleSize;
-    coronaMat.uniforms.uBrightness.value = particleBrightness;
+    coronaMat.uniforms.uBrightness.value = particleBrightness * glowStrength;
     const active = Math.max(0, Math.min(MAX_PARTICLES, Math.round(particleCount)));
     coronaGeo.setDrawRange(0, active);
     shell.update(t, {
       stateAlpha,
       enabled: shellEnabled,
-      edge: shellEdge,
-      inner: shellInner,
+      edge: shellEdge * halo,
+      inner: shellInner * halo,
       thickness: shellThickness,
+      glowStrength,
     });
     surface.rotation.y = t * 0.06;
 
-    for (let i = 0; i < flares.length; i++) {
-      const flare = flares[i];
-      const cycle = (t * flare.speed * (0.55 + activity * 0.9) + flare.phase) % 1;
-      const burst = Math.max(0, 1 - Math.abs(cycle - 0.14) * 7.0);
-      const reach = 1.10 + burst * 1.55;
-      flare.sprite.position.copy(flareDirs[i]).multiplyScalar(reach);
-      flare.sprite.scale.setScalar((1.2 + burst * 3.4) * (0.9 + halo * 0.1));
-      flare.sprite.material.opacity = burst * 0.62 * (0.35 + activity) * stateAlpha * glowStrength;
-      flare.sprite.material.rotation += 0.002;
-    }
   }
 
   function dispose() {
@@ -213,7 +181,6 @@ export function createSunStar({ radius, glowTexture }) {
     material.dispose();
     coronaGeo.dispose();
     coronaMat.dispose();
-    for (const flare of flares) flare.sprite.material.dispose();
     shell.dispose();
   }
 

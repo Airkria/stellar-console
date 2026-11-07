@@ -49,7 +49,6 @@ export const TUNE_DEFAULTS = {
   starParticleDrag: 1,
   starParticleSize: 1,
   starParticleBrightness: 1,
-  planetRipple: 1,
   orbitScale: 1,
   orbitSpeed: 1,
   orbitAlpha: 1,
@@ -93,7 +92,6 @@ const BASE_CONFIG = [
   { group: '恒星', key: 'planetGlow', label: '光晕亮度', min: 0, max: 1.5, step: 0.05, dec: 2 },
   { key: 'planetCore', label: '核心大小', min: 0.5, max: 1.6, step: 0.05, dec: 2 },
   { key: 'starScale', label: '恒星大小', min: 0.4, max: 1.5, step: 0.05, dec: 2 },
-  { key: 'planetRipple', label: '扩散光频率', min: 0.2, max: 3, step: 0.05, dec: 2 },
 
   { group: '光罩', type: 'toggle', key: 'starShellEnabled', label: '启用光罩' },
   { key: 'starShellThickness', label: '光罩厚度', min: 0.2, max: 2.5, step: 0.05, dec: 2 },
@@ -101,8 +99,8 @@ const BASE_CONFIG = [
   { key: 'starShellInner', label: '光罩内部亮度', min: 0, max: 2, step: 0.05, dec: 2 },
 
   { group: '发光云', key: 'starParticleCount', label: '粒子数量', min: 0, max: 1400, step: 10, dec: 0 },
-  { key: 'starParticleSpeed', label: '出生速度', min: 0, max: 3, step: 0.05, dec: 2 },
-  { key: 'starParticleDrag', label: '阻力', min: 0, max: 3, step: 0.05, dec: 2 },
+  { key: 'starParticleSpeed', label: '出生速度', min: 0, max: 10, step: 0.05, dec: 2 },
+  { key: 'starParticleDrag', label: '阻力', min: 0, max: 10, step: 0.05, dec: 2 },
   { key: 'starParticleSize', label: '粒子大小', min: 0.3, max: 2, step: 0.05, dec: 2 },
   { key: 'starParticleBrightness', label: '粒子亮度', min: 0, max: 2, step: 0.05, dec: 2 },
 
@@ -265,8 +263,7 @@ export function createTuning(app) {
     }
     document.documentElement.style.setProperty('--planet-glow', String(tune.planetGlow));
     document.documentElement.style.setProperty('--planet-core', String(tune.planetCore));
-    document.documentElement.style.setProperty('--planet-ripple', String(tune.planetRipple));
-    document.documentElement.style.setProperty('--space-glow', String(tune.spaceGlow * tune.cssNebula));
+        document.documentElement.style.setProperty('--space-glow', String(tune.spaceGlow * tune.cssNebula));
     app.scene?.applyBackground?.();
     app.requestRender?.();
   }

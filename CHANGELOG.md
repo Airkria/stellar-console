@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.2 — 2026-11-08
+
+- Opened the glow-cloud ranges: particle birth speed and drag are now 0–10.
+- Removed the expanding CSS ripple ring around running projects (and the
+  `planetRipple` control). The orbit rings remain.
+- Removed the sun's flare sprites and the now-unused glow texture.
+
 ## 0.5.1 — 2026-11-08
 
 - The image-picker row is no longer a `<label>`, so clicking `选择…` opens a

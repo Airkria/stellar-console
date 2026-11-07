@@ -47,6 +47,7 @@ export function createClassicStar({ color }) {
       shellThickness = 1,
       shellEdge = 1,
       shellInner = 0.35,
+      glowStrength = 1,
     } = {},
   ) {
     material.uniforms.uTime.value = t;
@@ -58,6 +59,7 @@ export function createClassicStar({ color }) {
       edge: shellEdge,
       inner: shellInner,
       thickness: shellThickness,
+      glowStrength,
     });
   }
 

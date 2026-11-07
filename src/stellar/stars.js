@@ -15,7 +15,6 @@ export function createStars(app) {
       data-project="${esc(p.id)}" data-state="${esc(p.state)}" data-focus="${app.state.selected === p.id}" data-selected="${app.state.selected === p.id}"
       style="--i:${p.index};--halo:${(p.halo * 1.8).toFixed(1)}px;--p:${(p.p * 1.9).toFixed(1)}px;--hue:${p.hue};--labelOffset:${(p.halo * 0.5 + 10).toFixed(1)}px;--labelBelow:${(p.halo * 0.5 + 14).toFixed(1)}px;--hitSize:${Math.min(260, Math.max(46, p.halo * 0.62)).toFixed(1)}px"
       aria-label="${esc(p.cn || p.name)}，${esc(labels[p.state] || p.state)}，点击打开数控制板">
-      <span class="planet"></span>
       <span class="label">${label}</span>
       <span class="hit"></span>
     </button>`;

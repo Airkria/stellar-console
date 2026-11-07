@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { makeGlowTexture } from './textures.js';
 import { getPlanetSkin, getStarSkin } from './skins/index.js';
 
 const STATE_ALPHA = { run: 1, wait: 0.9, alert: 1, idle: 0.62, paused: 0.4, archived: 0.28 };
@@ -13,8 +12,6 @@ const STATE_ACTIVITY = { run: 1.2, wait: 0.75, alert: 1.5, idle: 0.5, paused: 0.
  * hole really occludes it and the DOM layer can fade in sync.
  */
 export function createBodies(app, S, refs) {
-  let glowTexture = null;
-
   function clear() {
     if (!refs.bodyGroup) return;
     for (const entry of refs.projectBodies) {
@@ -35,8 +32,6 @@ export function createBodies(app, S, refs) {
 
   function build() {
     clear();
-    if (!glowTexture) glowTexture = makeGlowTexture('rgba(255,255,255,1)', 'rgba(255,210,170,.55)');
-
     const backRoot = new THREE.Group();
     S.galaxyGroup.add(backRoot);
     refs.backRoot = backRoot;
@@ -62,7 +57,6 @@ export function createBodies(app, S, refs) {
         project: p,
         radius: baseRadius,
         color: baseColor,
-        glowTexture,
       });
       starGroup.add(star.object3D);
 
@@ -188,8 +182,6 @@ export function createBodies(app, S, refs) {
 
   function dispose() {
     clear();
-    glowTexture?.dispose();
-    glowTexture = null;
   }
 
   return { build, update, rebuild, dispose };
