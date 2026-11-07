@@ -38,10 +38,7 @@ export function createStars(app) {
       });
       el.addEventListener('click', () => {
         if (performance.now() < app.suppressClickUntil) return;
-        app.state.selected = project.id;
-        app.renderTarget(project);
-        setFocus();
-        app.openProject(project.id, el);
+        app.activateProject(project.id, el);
       });
     });
   }

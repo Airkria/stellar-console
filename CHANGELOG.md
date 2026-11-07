@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0 — 2026-11-08
+
+- Two-step project activation: the first click selects a project and shows the
+  target card + leader line; a second click on the selected project opens the
+  console. Clicking another project switches the selection without opening.
+- Effect-freeze milestone for the galaxy console; next work moves to the
+  board / section features.
+
 ## 0.5.2 — 2026-11-08
 
 - Opened the glow-cloud ranges: particle birth speed and drag are now 0–10.

@@ -79,6 +79,21 @@ export function createStellarConsole({ mount, data: rawData, options = {} }) {
   app.closeProject = app.console.close;
   app.requestRender = app.scene.requestRender;
 
+  // Two-step activation: first click selects (card + leader line), second
+  // click on the already-selected project opens the console.
+  app.activateProject = (id, trigger) => {
+    const project = app.byId(id);
+    if (!project) return;
+    if (app.state.selected !== id) {
+      app.state.selected = id;
+      app.renderTarget(project);
+      app.setFocus();
+      app.requestRender?.();
+      return;
+    }
+    app.openProject(id, trigger);
+  };
+
   app.hud.render();
   app.hud.startClock();
   app.stars.render();

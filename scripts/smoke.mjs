@@ -140,6 +140,18 @@ await evaluate('stellarConsole.setStarSkin("orion", "classic")');
 await sleep(200);
 check('star skin applied', await evaluate('stellarConsole.data.projects.find((p) => p.id === "orion").starSkin'), 'classic');
 
+// Two-step activation: first click selects, second click opens.
+await evaluate('stellarConsole.selectProject(null)');
+await evaluate('document.querySelector(".star[data-project=lyra] .hit").click()');
+await sleep(120);
+check('first click selects', await evaluate('document.querySelector(".star[data-project=lyra]").dataset.selected'), 'true');
+check('first click stays closed', await evaluate('document.querySelector("#overlay").hidden'), true);
+check('first click shows card', await evaluate('document.querySelector("#targetCard").classList.contains("empty")'), false);
+await evaluate('document.querySelector(".star[data-project=lyra] .hit").click()');
+await sleep(200);
+check('second click opens', await evaluate('document.querySelector("#overlay").hidden'), false);
+await evaluate('stellarConsole.closeProject()');
+
 check('no runtime exceptions', exceptions.length, 0);
 
 console.log(JSON.stringify({ checks, exceptions }, null, 2));
