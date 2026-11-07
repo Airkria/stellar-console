@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1 — 2026-11-07
+
+- Flow textures are generated at 512² to reduce visible repetition at high speeds.
+- Planet skins are selectable per project (not only globally), matching the
+  per-project star-skin control.
+
 ## 0.2.0 — 2026-11-07
 
 - Reworked accretion-disk flow: cloud density plus independent X/Y translation
