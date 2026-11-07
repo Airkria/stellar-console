@@ -1,199 +1,168 @@
 import * as THREE from 'three';
 import { makeGlowTexture } from './textures.js';
+import { getPlanetSkin, getStarSkin } from './skins/index.js';
+
+const STATE_ALPHA = { run: 1, wait: 0.9, alert: 1, idle: 0.62, paused: 0.4, archived: 0.28 };
+const STATE_ACTIVITY = { run: 1.2, wait: 0.75, alert: 1.5, idle: 0.5, paused: 0.22, archived: 0.1 };
 
 /**
- * 3D project bodies: each project is a small emissive star, and its
- * satellites (plugins / extensions) orbit as coloured 3D spheres.
+ * 3D project bodies. Each project is a star from a pluggable skin, with
+ * satellites orbiting as opaque 3D planets from another skin registry.
  *
- * These live in their own scene and are composited after the black-hole pass,
- * so project labels stay readable even in front of the lensing region.
+ * The group lives in the main galaxy scene (not an overlay pass), so the black
+ * hole really occludes it and the DOM layer can fade in sync.
  */
 export function createBodies(app, S, refs) {
-  function build() {
-    refs.bodyScene = new THREE.Scene();
-    refs.bodyGroup = new THREE.Group();
-    refs.bodyScene.add(refs.bodyGroup);
-    refs.projectBodies = [];
+  let glowTexture = null;
 
-    const sphereGeo = new THREE.SphereGeometry(1, 32, 24);
-    const satGeo = new THREE.SphereGeometry(1, 20, 14);
-    const glowTex = makeGlowTexture('rgba(255,255,255,1)', 'rgba(200,230,255,.5)');
+  function clear() {
+    if (!refs.bodyGroup) return;
+    for (const entry of refs.projectBodies) {
+      entry.star.dispose();
+      for (const orbit of entry.orbits) {
+        orbit.planet.dispose();
+        orbit.ringGeometry.dispose();
+        orbit.ringMaterial.dispose();
+      }
+    }
+    S.galaxyGroup?.remove(refs.bodyGroup);
+    refs.bodyGroup = null;
+    refs.projectBodies = [];
+  }
+
+  function build() {
+    clear();
+    if (!glowTexture) glowTexture = makeGlowTexture('rgba(255,255,255,1)', 'rgba(255,210,170,.55)');
+
+    const bodyGroup = new THREE.Group();
+    S.galaxyGroup.add(bodyGroup);
+    refs.bodyGroup = bodyGroup;
+    refs.projectBodies = [];
 
     for (const p of app.data.projects) {
       if (p.core) continue;
-      const pos = new THREE.Vector3(p.x, 0.035, p.y);
-      const baseR = 0.075 + p.p * 0.012;
-      const baseColor = new THREE.Color().setHSL(p.hue / 360, 0.9, 0.62);
 
-      const starMat = new THREE.ShaderMaterial({
-        uniforms: { uColor: { value: baseColor }, uTime: { value: 0 }, uDim: { value: 1 } },
-        vertexShader: /* glsl */ `
-          varying vec3 vN;
-          varying vec3 vV;
-          void main() {
-            vec4 mv = modelViewMatrix * vec4(position, 1.0);
-            vN = normalize(normalMatrix * normal);
-            vV = normalize(-mv.xyz);
-            gl_Position = projectionMatrix * mv;
-          }`,
-        fragmentShader: /* glsl */ `
-          uniform vec3 uColor;
-          uniform float uTime;
-          uniform float uDim;
-          varying vec3 vN;
-          varying vec3 vV;
-          void main() {
-            vec3 n = normalize(vN);
-            vec3 v = normalize(vV);
-            float fres = pow(1.0 - max(dot(n, v), 0.0), 2.0);
-            float band = 0.5 + 0.5 * sin(n.y * 14.0 + uTime * 0.7 + n.x * 9.0);
-            vec3 c = mix(uColor, vec3(1.0), 0.35 + 0.45 * fres);
-            c += uColor * fres * 1.5;
-            c *= 0.86 + 0.14 * band;
-            gl_FragColor = vec4(c * uDim, 1.0);
-          }`,
-        depthTest: false,
-        depthWrite: false,
-        toneMapped: false,
+      const baseRadius = 0.05 + p.p * 0.009;
+      const baseColor = new THREE.Color().setHSL(p.hue / 360, 0.85, 0.6);
+      const group = new THREE.Group();
+      group.position.set(p.x, 0.035, p.y);
+      bodyGroup.add(group);
+
+      // --- star ---------------------------------------------------------
+      const starGroup = new THREE.Group();
+      group.add(starGroup);
+      const starSkin = getStarSkin(app.skinState.starFor(p));
+      const star = starSkin.create({
+        app,
+        project: p,
+        radius: baseRadius,
+        color: baseColor,
+        glowTexture,
       });
-      const star = new THREE.Mesh(sphereGeo, starMat);
-      star.position.copy(pos);
-      star.scale.setScalar(baseR);
-      refs.bodyGroup.add(star);
+      starGroup.add(star.object3D);
 
-      const glow = new THREE.Sprite(
-        new THREE.SpriteMaterial({
-          map: glowTex,
-          color: baseColor,
-          transparent: true,
-          blending: THREE.AdditiveBlending,
-          depthWrite: false,
-          depthTest: false,
-          opacity: 0.38,
-          toneMapped: false,
-        }),
-      );
-      const glowBase = baseR * 10;
-      glow.position.copy(pos);
-      glow.scale.setScalar(glowBase);
-      refs.bodyGroup.add(glow);
-
+      // --- satellites ---------------------------------------------------
       const orbits = [];
       p.satellites.slice(0, 4).forEach((_, i) => {
+        const orbitRadius = (0.22 + i * 0.16) * (0.6 + p.p * 0.05);
         const orbit = new THREE.Group();
-        orbit.position.copy(pos);
         orbit.rotation.x = 0.28 + i * 0.26;
         orbit.rotation.z = (i - 1) * 0.22;
-        refs.bodyGroup.add(orbit);
+        group.add(orbit);
 
-        const radius = baseR * (2.6 + i * 0.78);
-        const ring = new THREE.Mesh(
-          new THREE.RingGeometry(radius * 0.992, radius * 1.008, 96),
-          new THREE.MeshBasicMaterial({
-            color: baseColor,
-            transparent: true,
-            opacity: 0.17,
-            side: THREE.DoubleSide,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-            depthTest: false,
-            toneMapped: false,
-          }),
-        );
+        const ringGeometry = new THREE.RingGeometry(orbitRadius * 0.995, orbitRadius * 1.005, 96);
+        const ringMaterial = new THREE.MeshBasicMaterial({
+          color: baseColor.clone().lerp(new THREE.Color(0xffffff), 0.45),
+          transparent: true,
+          opacity: 0.07,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+          depthTest: false,
+          toneMapped: false,
+        });
+        const ring = new THREE.Mesh(ringGeometry, ringMaterial);
         ring.rotation.x = -Math.PI / 2;
         orbit.add(ring);
 
         const pivot = new THREE.Group();
         orbit.add(pivot);
 
-        const satColor = new THREE.Color().setHSL(((p.hue + 55 + i * 95) % 360) / 360, 0.85, 0.66);
-        const satMat = new THREE.ShaderMaterial({
-          uniforms: { uColor: { value: satColor } },
-          vertexShader: /* glsl */ `
-            varying vec3 vN;
-            varying vec3 vV;
-            void main() {
-              vec4 mv = modelViewMatrix * vec4(position, 1.0);
-              vN = normalize(normalMatrix * normal);
-              vV = normalize(-mv.xyz);
-              gl_Position = projectionMatrix * mv;
-            }`,
-          fragmentShader: /* glsl */ `
-            uniform vec3 uColor;
-            varying vec3 vN;
-            varying vec3 vV;
-            void main() {
-              vec3 n = normalize(vN);
-              float l = 0.45 + 0.55 * max(dot(n, normalize(vec3(-0.4, 0.8, 0.6))), 0.0);
-              vec3 c = uColor * l;
-              c += uColor * pow(1.0 - max(dot(n, normalize(vV)), 0.0), 2.0) * 0.8;
-              gl_FragColor = vec4(c, 1.0);
-            }`,
-          depthTest: false,
-          depthWrite: false,
-          toneMapped: false,
-        });
-        const sat = new THREE.Mesh(satGeo, satMat);
-        sat.scale.setScalar(0.03 + 0.01 * (i % 2) + p.p * 0.0016);
-        sat.position.x = radius;
-        pivot.add(sat);
+        const planetColor = new THREE.Color().setHSL(((p.hue + 55 + i * 95) % 360) / 360, 0.55, 0.58);
+        const planetGroup = new THREE.Group();
+        planetGroup.position.x = orbitRadius;
+        pivot.add(planetGroup);
 
-        const satGlow = new THREE.Sprite(
-          new THREE.SpriteMaterial({
-            map: glowTex,
-            color: satColor,
-            transparent: true,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-            depthTest: false,
-            opacity: 0.18,
-            toneMapped: false,
-          }),
-        );
-        satGlow.scale.setScalar(5);
-        sat.add(satGlow);
+        const planetSkin = getPlanetSkin(p.planetSkin || app.skinState.state.planet);
+        const planet = planetSkin.create({ app, project: p, color: planetColor, index: i });
+        planetGroup.add(planet.object3D);
 
         orbits.push({
           orbit,
           pivot,
-          speed: (0.35 + i * 0.18) * (i % 2 ? -1 : 1),
+          planetGroup,
+          ringMaterial,
+          ringGeometry,
+          planet,
+          basePlanetRadius: 0.022 + 0.007 * (i % 2) + p.p * 0.0012,
+          speed: (0.16 + i * 0.08) * (i % 2 ? -1 : 1),
           phase: Math.random() * Math.PI * 2,
         });
       });
 
-      refs.projectBodies.push({ p, star, starMat, glow, glowBase, baseR, baseGlow: 0.38, orbits });
+      refs.projectBodies.push({
+        p,
+        group,
+        starGroup,
+        star,
+        baseRadius,
+        orbits,
+      });
     }
   }
 
   function update(now) {
     if (!refs.bodyGroup) return;
-    if (S.galaxyGroup) refs.bodyGroup.rotation.y = S.galaxyGroup.rotation.y;
     const t = now * 0.001;
     const tune = app.tune;
 
     for (const entry of refs.projectBodies) {
       const p = entry.p;
       const halo = tune[`planetHalo_${p.id}`] ?? 1;
-      const stateAlpha =
-        { run: 1, wait: 0.9, alert: 1, idle: 0.62, paused: 0.4, archived: 0.28 }[p.state] ?? 1;
+      const stateAlpha = STATE_ALPHA[p.state] ?? 1;
+      const activity = STATE_ACTIVITY[p.state] ?? 1;
       const focused = app.state.hovered === p.id || app.state.selected === p.id;
 
-      entry.star.scale.setScalar(entry.baseR * tune.planetCore * (focused ? 1.12 : 1));
-      entry.star.rotation.y = t * 0.12;
-      entry.starMat.uniforms.uTime.value = t;
-      entry.starMat.uniforms.uDim.value = stateAlpha;
+      entry.starGroup.scale.setScalar(entry.baseRadius * tune.starScale * tune.planetCore * (focused ? 1.08 : 1));
+      entry.star.update(t, {
+        stateAlpha,
+        focused,
+        halo,
+        glowStrength: tune.planetGlow,
+        activity,
+      });
 
-      const pulse = 1 + 0.05 * Math.sin(t * 1.25 + entry.baseR * 30);
-      entry.glow.scale.setScalar(entry.glowBase * halo * pulse);
-      entry.glow.material.opacity =
-        entry.baseGlow * tune.planetGlow * stateAlpha * (0.92 + 0.08 * Math.sin(t * 1.25 + entry.baseR * 30));
-
-      for (const o of entry.orbits) {
-        o.orbit.scale.setScalar(tune.orbitScale);
-        o.pivot.rotation.y = t * o.speed + o.phase;
+      for (const orbit of entry.orbits) {
+        orbit.orbit.scale.setScalar(tune.orbitScale);
+        orbit.ringMaterial.opacity = 0.07 * tune.orbitAlpha * stateAlpha;
+        orbit.pivot.rotation.y = t * orbit.speed * tune.orbitSpeed + orbit.phase;
+        orbit.planetGroup.scale.setScalar(
+          orbit.basePlanetRadius * tune.planetSize * (focused ? 1.1 : 1),
+        );
+        orbit.planet.update(t, { stateAlpha, focused });
       }
     }
   }
 
-  return { build, update };
+  function rebuild() {
+    build();
+    app.requestRender?.();
+  }
+
+  function dispose() {
+    clear();
+    glowTexture?.dispose();
+    glowTexture = null;
+  }
+
+  return { build, update, rebuild, dispose };
 }

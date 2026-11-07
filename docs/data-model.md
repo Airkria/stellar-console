@@ -10,6 +10,7 @@
     state: { run, wait, alert, idle, paused, archived },
     task: { pending, approved, doing, review, passed, released, paused, risk },
   },
+  planetSkin: 'rock',       // 全局行星皮肤
   projects: [Project],
   decisions: [Decision],
   ideas: [Idea],
@@ -40,6 +41,8 @@
 | `last` | string |  | 最近活动，如 `2H`、`10-31` |
 | `updated` | string |  | 最近同步，如 `14:22` |
 | `satellites` | string[] |  | 卫星 / 插件 / 扩展，最多渲染 4 个轨道 |
+| `starSkin` | string |  | 恒星皮肤：`classic` / `sun`，缺省 `classic` |
+| `planetSkin` | string |  | 该项目卫星使用的行星皮肤，覆盖全局 `planetSkin` |
 | `files` | FileRef[] |  | 文件监视列表 |
 | `sections` | Section[] |  | 板块与任务 |
 | `core` | boolean |  | 中心核心节点；不渲染 3D 恒星，只保留标签 |
@@ -127,3 +130,42 @@ links: [
 ```js
 { id: 'alpha', name: 'Alpha', code: 'AL-01', state: 'run' }
 ```
+
+## 皮肤
+
+恒星与行星都是可替换的渲染模块，注册在 `src/stellar/skins/index.js`：
+
+```js
+import { registerStarSkin, registerPlanetSkin } from 'stellar-console';
+
+registerStarSkin('supernova', {
+  label: '超新星',
+  create({ project, radius, color, glowTexture }) {
+    // 返回 { object3D, update(t, opts), dispose() }
+  },
+});
+
+registerPlanetSkin('crystal', {
+  label: '晶体',
+  create({ color }) {
+    // 返回 { object3D, update(t, opts), dispose() }
+  },
+});
+```
+
+内置：
+
+- 恒星：`classic`（经典恒星）、`sun`（火焰恒星）
+- 行星：`rock`（岩石）、`ice`（冰晶）、`lava`（熔岩）
+
+面板「皮肤」组会为每个非核心项目生成恒星皮肤下拉框，并提供一个全局行星皮肤下拉框；选择会写入 `localStorage`（`<prefix>:skins`），并立即重建 3D 项目本体。
+
+`update(t, opts)` 的 `opts`：
+
+| 字段 | 说明 |
+| --- | --- |
+| `stateAlpha` | 项目状态对应的亮度系数 |
+| `focused` | 当前悬停 / 选中 |
+| `halo` | 该项目的 `planetHalo_<id>` 调参值 |
+| `glowStrength` | 全局 `planetGlow` |
+| `activity` | 由 `state` 推导的活动强度，用于火焰 / 耀斑频率 |

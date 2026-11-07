@@ -67,6 +67,7 @@ export function normalizeData(raw = {}) {
       state: { ...DEFAULT_STATE_LABELS, ...(raw.labels?.state || {}) },
       task: { ...DEFAULT_TASK_LABELS, ...(raw.labels?.task || {}) },
     },
+    planetSkin: raw.planetSkin || 'rock',
     projects,
     decisions: list(raw.decisions).filter((d) => known.has(d.project)),
     ideas: list(raw.ideas),

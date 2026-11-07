@@ -18,7 +18,7 @@
   data,          // normalizeData() 的结果
   state,         // { current, selected, hovered, motion, demo, backgroundPaused, ideas, signals }
   tune,          // 当前调参值
-  refs,          // Three.js 对象：bhPass、bloomPass、材料、bodyScene…
+  refs,          // Three.js 对象：bhPass、bloomPass、材料、bodyGroup…
   scene,         // SceneApi：S（renderer/camera/controls/VW/VH…）、setup、start…
   updatePlanets, // projection.update
   updateLeader,  // leader.update
@@ -34,7 +34,7 @@
 
 1. `mountTemplate()` 注入 HUD、星图、控制台、调参面板。
 2. `createTuning()` 读取 localStorage 与 URL，生成含每个项目光晕项的配置。
-3. 创建 HUD、目标卡、引线、控制台、星体 DOM、Three.js 场景、投影、调参面板、信号。
+3. 创建 HUD、目标卡、引线、控制台、星体 DOM、皮肤状态、Three.js 场景、投影、调参面板、信号。
 4. `scene.setup()`：渲染器 → 背景 → 相机 → 银河 → 黑洞 pass → 项目锚点 → 3D 项目本体 → Composer。
 5. 读取 URL 参数（相机、打开/选中/悬停、信号）。
 6. `scene.renderOnce()` + `scene.start()`。
@@ -42,17 +42,15 @@
 ## 渲染管线
 
 ```
-RenderPass(scene, camera)          银河、尘埃、入流、星河、远景星、星云
+RenderPass(scene, camera)          银河、尘埃、入流、星河、远景星、星云、项目恒星/卫星
   ↓
 黑 hole ShaderPass                 全屏 Schwarzschild 光线追踪 + 吸积盘
-  ↓
-RenderPass(bodyScene, camera)      3D 项目恒星 / 卫星（clear = false）
   ↓
 UnrealBloomPass                    辉光（低画质时跳过）
 ```
 
 - 银河与项目锚点共享 `galaxyGroup`，因此整体一起旋转。
-- `bodyScene` 是独立的叠加层：项目恒星不会参与黑洞透镜，也不会被吸积盘遮挡。这是一个可读性取舍，详见 `docs/black-hole.md`。
+- 项目恒星 / 卫星与银河在同一个场景里；黑洞 pass 会真实遮挡它们，吸积盘也会覆盖前方星体。相应地，DOM 标签在黑洞阴影范围内淡出，隐藏的项目需要旋转视角才能点到。
 - DOM 星体层每帧由 `projection.update()` 同步到屏幕坐标，并计算黑洞遮挡。
 
 ## 坐标
@@ -84,9 +82,18 @@ UnrealBloomPass                    辉光（低画质时跳过）
 - **调参默认值**：修改 `src/stellar/tuning.js` 的 `TUNE_DEFAULTS` 与 `BASE_CONFIG`。
 - **替换某一层**：例如用 WebSocket 驱动信号，只需在外部调用 `api.pushSignal()`，或替换 `signals.js`。
 
+## 皮肤层
+
+- `skins/index.js`：`registerStarSkin` / `registerPlanetSkin` 注册表与内置注册。
+- `skins/star/classic.js`：经典恒星球 + 光晕。
+- `skins/star/sun.js`：熔岩表面 + 高温粒子壳 + 周期性耀斑，活动强度由项目状态决定。
+- `skins/planet/rock.js` / `ice.js` / `lava.js`：不透明行星材质。
+- `bodies.js`：按 `project.starSkin` / `project.planetSkin`（或全局 `planetSkin`）创建，面板切换时重建。
+- `skins/state.js`：皮肤选择的 localStorage 持久化。
+
 ## 已知边界
 
 - 吸积盘流动是视觉平流模拟，不是流体解。
-- 3D 项目本体是叠加层，不参与黑洞透镜与吸积盘遮挡。
+- 项目本体遵循屏幕空间的实体遮挡，但不做逐像素的引力透镜重投影。
 - 全屏体积 pass 对低端 GPU 较重；当前只有 `?quality=low` 一档降级。
 - DOM 标签使用 `will-change: transform`，项目数量很大时需要改为虚拟化或 Canvas 文本。

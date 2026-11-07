@@ -2,6 +2,7 @@
 // model (projects, decisions, signals, links) without shipping any real vault.
 export const demoData = {
   brand: { title: '群星交互系统', subtitle: 'STELLAR CONSOLE // DEMO' },
+  planetSkin: 'rock',
   core: { name: 'HELIOS', tag: '核心节点' },
   links: [
     ['orion', 'lyra'],
@@ -21,6 +22,7 @@ export const demoData = {
       halo: 130,
       hue: 190,
       state: 'run',
+      starSkin: 'sun',
       phase: '渲染管线重构已验收，等待发布候选',
       goal: '完成场景渲染管线与导出流程验收',
       mass: '34',
@@ -93,6 +95,7 @@ export const demoData = {
       halo: 90,
       hue: 265,
       state: 'idle',
+      planetSkin: 'ice',
       labelBelow: true,
       phase: '程序化生成 · 待数据表同步',
       goal: '完成枚举定义与数据表同步',
@@ -137,6 +140,7 @@ export const demoData = {
       halo: 88,
       hue: 330,
       state: 'idle',
+      planetSkin: 'lava',
       phase: '工程搭建 · 主城迁移完成',
       goal: '第一关卡白盒',
       mass: '5',

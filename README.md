@@ -24,9 +24,11 @@ Stellar Console 是一个**以星系为界面**的项目交互中枢：中心是
 
 ## 功能
 
-- **真实黑洞遮挡**：全屏 Schwarzschild 光线追踪 pass，事件视界会真正遮挡后方银河，而不是贴一张图在上面。
-- **体积吸积盘**：银白色体积盘 + 内缘爆亮 + 外侧快速衰减 + 光子环抗锯齿；盘面流动由两张可平铺 fBm 沿 `φ - ω(r)t` 平流，可调速度与方向。
-- **3D 项目星系**：项目本体是带 Fresnel / 流纹的 3D 恒星球，卫星是沿倾斜轨道公转的 3D 小球。
+- **真实黑洞遮挡**：全屏 Schwarzschild 光线追踪 pass，事件视界会真正遮挡后方银河；项目恒星也放进主场景，遵循实体遮挡，不再叠在黑洞前面。
+- **体积吸积盘**：银白色体积盘 + 内缘爆亮 + 外侧快速衰减 + 光子环抗锯齿。盘面云层由两张可平铺 fBm 组成，`云层密度` 控制覆盖率，`横向流速` / `纵向流速` 分别平移 X / Y，可以拉伸出流动感。
+- **3D 项目星系**：项目恒星与卫星都是可替换的渲染模块（皮肤）。内置经典恒星、火焰恒星（表面熔岩 + 高温粒子 + 偶发耀斑），行星内置岩石 / 冰晶 / 熔岩。
+- **星盘控制**：主星粒径 / 亮度、尘埃、雾面、星盘厚度 / 宽度，以及旋臂内宽、外宽、整体宽度。
+- **背景切换**：面板可开关图片背景、替换图片地址，或改用自定义纯色，并即时对比。
 - **DOM + WebGL 混合**：标签、命中区、目标卡、引线用 DOM/SVG，保证可访问性与文字清晰；星体与背景用 WebGL。
 - **实时调参面板**：所有主要效果值可实时调整；支持 `?tune={JSON}` 覆盖与 `?panel=0` 隐藏。
 - **演示数据**：仓库内的 `Orion / Lyra / Draco / Phoenix / HELIOS / Vega / Atlas` 全部为虚构示例。
@@ -72,6 +74,8 @@ const consoleApp = createStellarConsole({
         halo: 130,        // 光晕大小
         hue: 190,         // 色相
         state: 'run',     // run | wait | alert | idle | paused | archived
+        starSkin: 'sun',  // classic | sun | 自定义注册
+        planetSkin: 'rock',
         phase: '正在推进第一阶段',
         goal: '完成第一阶段验收',
         mass: '12',
@@ -107,10 +111,20 @@ const consoleApp = createStellarConsole({
 | `selectProject(id \| null)` | 选中 / 取消选中并显示目标卡 |
 | `setProjectState(id, state)` | 修改项目状态并刷新星体标签与 HUD |
 | `pushSignal({ project, text, src })` | 推送一条实时信号 |
-| `setTune(key, value)` / `getTune()` | 读写调参值 |
+| `setTune(key, value)` / `getTune()` | 读写调参值（number / boolean / string） |
+| `setStarSkin(id, skin)` / `setPlanetSkin(skin)` | 切换项目恒星 / 全局行星皮肤 |
+| `listStarSkins()` / `listPlanetSkins()` | 列出内置皮肤 |
 | `setMotion(on)` / `setDemo(on)` | 开关动效 / 演示信号 |
 | `resize()` | 容器尺寸变化后手动刷新 |
 | `destroy()` | 停止渲染并清空容器 |
+
+自定义皮肤通过模块导出注册：
+
+```js
+import { registerStarSkin, registerPlanetSkin } from 'stellar-console';
+```
+
+详见 [数据模型 · 皮肤](docs/data-model.md#皮肤)。
 
 ## URL 参数
 
@@ -151,6 +165,7 @@ src/
    ├─ signals.js           LIVE 信号与动效开关
    ├─ hud.js               顶部态势
    ├─ textures.js          程序化贴图
+   ├─ skins/               恒星 / 行星皮肤注册表与内置实现
    ├─ core/                小工具
    └─ styles/              分模块 CSS
 ```

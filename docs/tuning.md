@@ -29,9 +29,11 @@ URL 一次性覆盖：
 | `emission` | 盘亮度 | 2.2 | 0.5–4 |
 | `absorb` | 盘吸收 | 0.05 | 0–0.2 |
 | `ring` | 光子环强度 | 1.2 | 0–2 |
-| `flow` | 盘面流动（空隙对比） | 1.0 | 0–1.5 |
-| `flowSpeed` | 流动速度 | 1.0 | 0–3 |
-| `flowDir` | 流动方向 | 1 | -1 / 1 |
+| `cloudDensity` | 云层密度 / 覆盖率 | 0.55 | 0–1 |
+| `flowX` | 横向流速（绕盘方向） | 0.12 | -1–1 |
+| `flowY` | 纵向流速（外扩 / 内收） | 0.05 | -1–1 |
+
+`flowX` 与 `flowY` 是独立的 UV 平移速度；两者比例不同会拉长 / 压扁云团，形成“拉伸”的流动感。速度为 0 时云层冻结，速度很小时也不会退化成同心细线。
 
 `rBound` 会被自动抬到 `max(rBound, diskOut + 0.35)`，避免盘超出透镜边界。
 
@@ -46,15 +48,22 @@ URL 一次性覆盖：
 | `hazeAlpha` | 星系雾面 | 1.0 |
 | `starThick` | 星盘厚度（Y 轴缩放） | 1.0 |
 | `starWidth` | 星盘宽度（XZ 轴缩放） | 1.0 |
+| `armInner` | 旋臂内宽（世界单位） | 0.07 |
+| `armOuter` | 旋臂外宽（世界单位） | 0.26 |
+| `armWidth` | 旋臂宽度整体倍数 | 1.0 |
 
 ## 行星
 
 | 键 | 说明 | 默认 |
 | --- | --- | --- |
-| `planetGlow` | 项目光晕亮度 | 1.0 |
+| `planetGlow` | 项目光晕亮度 / 耀斑强度 | 1.0 |
 | `planetCore` | 3D 恒星核心大小 | 1.0 |
+| `starScale` | 恒星整体大小 | 1.0 |
+| `planetSize` | 行星整体大小 | 1.0 |
 | `planetRipple` | 运行扩散光频率（CSS 动画时长） | 1.0 |
 | `orbitScale` | 卫星轨道整体缩放 | 1.0 |
+| `orbitSpeed` | 公转速度倍数 | 1.0 |
+| `orbitAlpha` | 轨道环亮度 | 1.0 |
 | `planetHalo_<id>` | 单个项目光晕大小，按项目自动生成 | 1.0 |
 
 ## 辉光
@@ -81,6 +90,25 @@ URL 一次性覆盖：
 | `inflowSize` | 入流粒径 | 1.0 |
 | `inflowAlpha` | 入流亮度 | 1.3 |
 
+## 背景
+
+| 键 | 类型 | 说明 | 默认 |
+| --- | --- | --- | --- |
+| `bgUseImage` | boolean | 启用图片背景；关闭后使用纯色 | `true` |
+| `bgImageUrl` | string | 背景图片地址，相对页面或绝对 URL | `./assets/bg.jpg` |
+| `bgColor` | string | 纯色背景 / 图片加载失败时的回退色 | `#03060c` |
+
+切换图片时会异步加载新纹理；关闭图片或加载失败会立即回退到 `bgColor`，同时更新 `--bg` CSS 变量与渲染器 clear color。
+
+## 皮肤
+
+恒星、行星皮肤不放在 `TUNE_DEFAULTS` 里，而是由面板「皮肤」组管理：
+
+- 每个非核心项目一个恒星皮肤下拉框（`classic` / `sun`）。
+- 一个全局行星皮肤下拉框（`rock` / `ice` / `lava`）。
+
+选择写入 `localStorage` 的 `<prefix>:skins`，并通过 `setStarSkin` / `setPlanetSkin` API 重建 3D 项目本体。自定义皮肤见 [数据模型 · 皮肤](data-model.md#皮肤)。
+
 ## 修改默认值
 
 编辑 `src/stellar/tuning.js`：
@@ -91,6 +119,6 @@ URL 一次性覆盖：
 
 新增一个数值参数的最小步骤：
 
-1. 在 `TUNE_DEFAULTS` 增加键与默认值。
-2. 在 `BASE_CONFIG` 增加一条配置（或在 `buildTuneConfig` 动态追加）。
-3. 在 `tuning.apply()` 中把值写到 uniform / material / CSS 变量。
+1. 在 `TUNE_DEFAULTS` 增加键与默认值（number / boolean / string 都支持）。
+2. 在 `BASE_CONFIG` 增加一条配置（或在 `buildTuneConfig` 动态追加），并用 `type: 'toggle' | 'text' | 'color'` 选择控件；缺省为 range。
+3. 在 `tuning.apply()` 中把值写到 uniform / material / CSS 变量 / 背景。

@@ -36,6 +36,64 @@ export function createScene(app) {
   let galaxy = null;
   let blackHole = null;
   let bodies = null;
+  let bgTexture = null;
+  let bgKey = '';
+  let bgRequest = 0;
+
+  // Image / solid-colour backdrop, driven by the tuning panel. Both paths
+  // always set a clear colour so a failed image still has a usable fallback.
+  function applyBackground() {
+    if (!S.scene) return;
+    const tune = app.tune;
+    const colorHex = String(tune.bgColor || '#03060c');
+    const color = new THREE.Color(colorHex);
+    document.documentElement.style.setProperty('--bg', colorHex);
+    S.renderer?.setClearColor(color, 1);
+
+    const url = String(tune.bgImageUrl || '').trim();
+    if (!tune.bgUseImage || !url) {
+      if (bgKey !== `color|${colorHex}`) {
+        bgKey = `color|${colorHex}`;
+        bgRequest++;
+        if (bgTexture) {
+          bgTexture.dispose();
+          bgTexture = null;
+        }
+        S.scene.background = color;
+        S.needsRender = true;
+      }
+      return;
+    }
+
+    const key = `image|${url}`;
+    if (key === bgKey) return;
+    bgKey = key;
+    const request = ++bgRequest;
+    new THREE.TextureLoader().load(
+      url,
+      (texture) => {
+        if (request !== bgRequest || S.disposed) {
+          texture.dispose();
+          return;
+        }
+        texture.colorSpace = THREE.SRGBColorSpace;
+        if (bgTexture) bgTexture.dispose();
+        bgTexture = texture;
+        S.scene.background = texture;
+        S.needsRender = true;
+      },
+      undefined,
+      () => {
+        if (request !== bgRequest) return;
+        if (bgTexture) {
+          bgTexture.dispose();
+          bgTexture = null;
+        }
+        S.scene.background = color;
+        S.needsRender = true;
+      },
+    );
+  }
 
   function setup() {
     S.VW = $('#space')?.clientWidth || window.innerWidth;
@@ -73,23 +131,9 @@ export function createScene(app) {
 
     S.scene = new THREE.Scene();
     S.starTexture = makePointTexture();
+    // Procedural nebula is the immediate fallback; applyBackground() replaces
+    // it with the tuned image or solid colour once the scene is ready.
     S.scene.background = makeNebulaTexture();
-
-    const backgroundUrl = app.options.backgroundUrl === undefined ? './assets/bg.jpg' : app.options.backgroundUrl;
-    if (backgroundUrl) {
-      new THREE.TextureLoader().load(
-        backgroundUrl,
-        (tex) => {
-          tex.colorSpace = THREE.SRGBColorSpace;
-          S.scene.background = tex;
-          S.needsRender = true;
-        },
-        undefined,
-        () => {
-          /* keep the generated nebula */
-        },
-      );
-    }
 
     S.camera = new THREE.PerspectiveCamera(52, S.VW / S.VH, 0.1, 100);
     S.camera.position.set(0, 2.6, BASE_DIST);
@@ -115,18 +159,13 @@ export function createScene(app) {
 
     bodies = createBodies(app, S, refs);
     bodies.build();
+    S.bodies = bodies;
 
     S.composer = new EffectComposer(S.renderer);
     S.composer.setPixelRatio(S.DPR);
     S.composer.setSize(S.VW, S.VH);
     S.composer.addPass(new RenderPass(S.scene, S.camera));
     if (refs.bhPass) S.composer.addPass(refs.bhPass);
-    if (refs.bodyScene) {
-      const bodyPass = new RenderPass(refs.bodyScene, S.camera);
-      bodyPass.clear = false;
-      S.composer.addPass(bodyPass);
-      refs.bodyPass = bodyPass;
-    }
     if (!S.low) {
       refs.bloomPass = new UnrealBloomPass(new THREE.Vector2(S.VW, S.VH), 0.1, 0.45, 0.97);
       S.composer.addPass(refs.bloomPass);
@@ -293,8 +332,11 @@ export function createScene(app) {
     window.removeEventListener('resize', resize);
     S.controls?.dispose();
     S.composer?.dispose?.();
+    bodies?.dispose();
     S.renderer?.dispose();
+    bgTexture?.dispose();
+    bgTexture = null;
   }
 
-  return { S, setup, setupControls, start, requestRender, renderOnce, resize, dispose };
+  return { S, setup, setupControls, start, requestRender, renderOnce, resize, dispose, applyBackground };
 }

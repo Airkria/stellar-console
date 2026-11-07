@@ -27,11 +27,11 @@ export const blackHoleShader = {
     uFalloff: { value: 1.30 },
     uAbsorb: { value: 0.05 },
     uRing: { value: 1.2 },
-    uFlow: { value: 1.0 },
+    uCloudDensity: { value: 0.55 },
+    uFlowX: { value: 0.12 },
+    uFlowY: { value: 0.05 },
     uFlowMap: { value: null },
     uFlowMap2: { value: null },
-    uFlowDir: { value: 1 },
-    uFlowSpeed: { value: 1.0 },
   },
   vertexShader: /* glsl */`
     varying vec2 vUv;
@@ -62,11 +62,11 @@ export const blackHoleShader = {
     uniform float uFalloff;
     uniform float uAbsorb;
     uniform float uRing;
-    uniform float uFlow;
-    uniform float uFlowSpeed;
+    uniform float uCloudDensity;
+    uniform float uFlowX;
+    uniform float uFlowY;
     uniform sampler2D uFlowMap;
     uniform sampler2D uFlowMap2;
-    uniform float uFlowDir;
 
     #define PI 3.141592653589793
     const int MAX_STEPS = 260;
@@ -132,15 +132,27 @@ export const blackHoleShader = {
       float outer = 1.0 - smoothstep(uDiskOut * 0.76, uDiskOut, rr);
       float radial = inner * outer / pow(max(rr, 1.0), 2.20);
       float rim = 1.0 + 1.30 * exp(-pow((rr - uDiskIn * 1.30) / 0.55, 2.0));
+      // Cloud field in polar UV: X wraps around the disk, Y runs outward.
+      // The two axes translate independently, so a speed ratio stretches the
+      // clouds instead of producing concentric rings.
       float phi = atan(p.z, p.x);
-      float omega = 0.55 / sqrt(max(rr, 1.0));
-      float adv = omega * uTime * uFlowSpeed * uFlowDir * 0.55;
-      vec2 fuv = vec2(phi / 6.2831853 * 8.0 - adv, log(max(rr, 1.0)) * 1.2 - uTime * 0.04 * uFlowSpeed * uFlowDir);
-      float n1 = texture2D(uFlowMap, fuv, 0.8).r;
-      float n2 = texture2D(uFlowMap2, vec2(fuv.x * 2.0 + 0.37, fuv.y * 1.3 + 0.11), 0.8).r;
-      float flow = smoothstep(0.22, 0.78, mix(n1, n2, 0.5));
+      vec2 baseUv = vec2(phi / 6.2831853 * 9.0, log(max(rr, 1.0)) * 1.35);
+      vec2 drift = vec2(uFlowX, uFlowY) * uTime * 0.75;
+      // A gentle domain warp keeps the texture from reading as a tiled sheet.
+      vec2 warp = vec2(
+        texture2D(uFlowMap2, baseUv * 0.45 + drift * 0.25 + vec2(0.13, 0.71), 0.8).r,
+        texture2D(uFlowMap, baseUv * 0.45 + drift * 0.25 + vec2(0.67, 0.21), 0.8).r
+      ) - 0.5;
+      vec2 uv1 = baseUv + drift + warp * 0.22;
+      vec2 uv2 = baseUv * vec2(1.9, 1.6) + drift * 1.7 + vec2(3.7, 1.9) + warp * 0.35;
+      float n1 = texture2D(uFlowMap, uv1, 0.8).r;
+      float n2 = texture2D(uFlowMap2, uv2, 0.8).r;
+      float n = mix(n1, n2, 0.42);
+      // Density controls coverage: low = sparse wisps, high = nearly solid.
+      float threshold = mix(0.78, 0.08, clamp(uCloudDensity, 0.0, 1.0));
+      float flow = smoothstep(threshold, threshold + 0.26, n);
       float d = pow(vert, 1.6) * radial * rim;
-      d *= mix(1.0, 0.08 + 0.92 * flow, uFlow);
+      d *= mix(0.04, 1.0, flow);
       d = pow(d, uFalloff);
       // Narrow, very bright inner edge: the "burst" at the horizon.
       float burst = exp(-pow((rr - uDiskIn * 1.06) / 0.18, 2.0));

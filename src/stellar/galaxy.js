@@ -32,6 +32,8 @@ export function createGalaxy({ scene, galaxyGroup, starTexture, refs }) {
     const col = new Float32Array(N * 3);
     const sizes = new Float32Array(N);
     const alphas = new Float32Array(N);
+    const armT = new Float32Array(N);
+    const offset = new Float32Array(N * 3);
     const warm = new THREE.Color('#ffe2bd');
     const blue = new THREE.Color('#a9c8ff');
     const pale = new THREE.Color('#e4f0ff');
@@ -43,11 +45,16 @@ export function createGalaxy({ scene, galaxyGroup, starTexture, refs }) {
       const arm = i % 3;
       const t = Math.pow(Math.random(), 0.52);
       const r = 0.18 + t * 4.25;
-      const armR = 0.07 + 0.26 * t;
       const th = arm * ((Math.PI * 2) / 3) + 1.65 * Math.log(r / 0.18) + gauss() * (0.004 + 0.02 * t);
-      pos[k * 3] = Math.cos(th) * r + gauss() * armR;
-      pos[k * 3 + 1] = gauss() * armR * 1.1;
-      pos[k * 3 + 2] = Math.sin(th) * r + gauss() * armR;
+      // Base spiral is fixed; the cross-section offset is applied in the
+      // vertex shader so arm width can be tuned without rebuilding geometry.
+      pos[k * 3] = Math.cos(th) * r;
+      pos[k * 3 + 1] = 0;
+      pos[k * 3 + 2] = Math.sin(th) * r;
+      offset[k * 3] = gauss();
+      offset[k * 3 + 1] = gauss() * 1.1;
+      offset[k * 3 + 2] = gauss();
+      armT[k] = t;
       const c = t < 0.1 || Math.random() < 0.1 ? warm : Math.random() < 0.45 ? pale : Math.random() < 0.75 ? blue : violet;
       col[k * 3] = c.r;
       col[k * 3 + 1] = c.g;
@@ -79,6 +86,8 @@ export function createGalaxy({ scene, galaxyGroup, starTexture, refs }) {
     geo.setAttribute('aColor', new THREE.BufferAttribute(col, 3));
     geo.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
     geo.setAttribute('aAlpha', new THREE.BufferAttribute(alphas, 1));
+    geo.setAttribute('aArmT', new THREE.BufferAttribute(armT, 1));
+    geo.setAttribute('aOffset', new THREE.BufferAttribute(offset, 3));
     const mat = new THREE.ShaderMaterial({
       uniforms: {
         uMap: { value: starTexture },
@@ -87,11 +96,16 @@ export function createGalaxy({ scene, galaxyGroup, starTexture, refs }) {
         uAlpha: { value: 1 },
         uThick: { value: 1 },
         uWidth: { value: 1 },
+        uArmInner: { value: 0.07 },
+        uArmOuter: { value: 0.26 },
+        uArmWidth: { value: 1 },
       },
       vertexShader: /* glsl */ `
         attribute float aSize;
         attribute float aAlpha;
         attribute vec3 aColor;
+        attribute float aArmT;
+        attribute vec3 aOffset;
         varying vec3 vColor;
         varying float vAlpha;
         uniform float uPixelRatio;
@@ -99,10 +113,14 @@ export function createGalaxy({ scene, galaxyGroup, starTexture, refs }) {
         uniform float uAlpha;
         uniform float uThick;
         uniform float uWidth;
+        uniform float uArmInner;
+        uniform float uArmOuter;
+        uniform float uArmWidth;
         void main() {
           vColor = aColor;
           vAlpha = aAlpha * uAlpha;
-          vec3 p = position;
+          float armR = mix(uArmInner, uArmOuter, aArmT) * uArmWidth;
+          vec3 p = position + aOffset * armR;
           p.y *= uThick;
           p.xz *= uWidth;
           vec4 mv = modelViewMatrix * vec4(p, 1.0);
@@ -136,6 +154,8 @@ export function createGalaxy({ scene, galaxyGroup, starTexture, refs }) {
     const col = new Float32Array(N * 3);
     const sizes = new Float32Array(N);
     const alphas = new Float32Array(N);
+    const armT = new Float32Array(N);
+    const offset = new Float32Array(N * 3);
     const warm = new THREE.Color('#ffc98f');
     const amber = new THREE.Color('#d9946b');
     const violet = new THREE.Color('#b79bff');
@@ -156,11 +176,14 @@ export function createGalaxy({ scene, galaxyGroup, starTexture, refs }) {
         const arm = i % 3;
         const t = Math.pow(Math.random(), 0.6);
         const r = 0.14 + t * 4.35;
-        const armR = 0.09 + 0.34 * t;
         const th = arm * ((Math.PI * 2) / 3) + 1.65 * Math.log(r / 0.14) + gauss() * (0.015 + 0.06 * t);
-        x = Math.cos(th) * r + gauss() * armR;
-        z = Math.sin(th) * r + gauss() * armR;
-        y = gauss() * armR * 1.1;
+        x = Math.cos(th) * r;
+        z = Math.sin(th) * r;
+        y = 0;
+        offset[i * 3] = gauss();
+        offset[i * 3 + 1] = gauss() * 1.1;
+        offset[i * 3 + 2] = gauss();
+        armT[i] = t;
       }
       pos[i * 3] = x;
       pos[i * 3 + 1] = y;
@@ -178,6 +201,8 @@ export function createGalaxy({ scene, galaxyGroup, starTexture, refs }) {
     geo.setAttribute('aColor', new THREE.BufferAttribute(col, 3));
     geo.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
     geo.setAttribute('aAlpha', new THREE.BufferAttribute(alphas, 1));
+    geo.setAttribute('aArmT', new THREE.BufferAttribute(armT, 1));
+    geo.setAttribute('aOffset', new THREE.BufferAttribute(offset, 3));
     const mat = new THREE.ShaderMaterial({
       uniforms: {
         uMap: { value: starTexture },
@@ -187,11 +212,16 @@ export function createGalaxy({ scene, galaxyGroup, starTexture, refs }) {
         uAlpha: { value: 1 },
         uThick: { value: 1 },
         uWidth: { value: 1 },
+        uArmInner: { value: 0.09 },
+        uArmOuter: { value: 0.34 },
+        uArmWidth: { value: 1 },
       },
       vertexShader: /* glsl */ `
         attribute float aSize;
         attribute float aAlpha;
         attribute vec3 aColor;
+        attribute float aArmT;
+        attribute vec3 aOffset;
         varying vec3 vColor;
         varying float vAlpha;
         uniform float uPixelRatio;
@@ -200,10 +230,14 @@ export function createGalaxy({ scene, galaxyGroup, starTexture, refs }) {
         uniform float uAlpha;
         uniform float uThick;
         uniform float uWidth;
+        uniform float uArmInner;
+        uniform float uArmOuter;
+        uniform float uArmWidth;
         void main() {
           vColor = aColor;
           vAlpha = aAlpha * uAlpha;
-          vec3 p = position;
+          float armR = mix(uArmInner, uArmOuter, aArmT) * uArmWidth;
+          vec3 p = position + aOffset * armR;
           p.y += sin(uTime * 0.12 + p.x * 1.7 + p.z * 1.3) * 0.012;
           p.y *= uThick;
           p.xz *= uWidth;

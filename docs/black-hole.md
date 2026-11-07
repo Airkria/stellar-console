@@ -69,18 +69,22 @@ vec3 silverPalette(float r) { ... }
 使用两张 256² 可平铺 fBm 纹理（`makeFlowTexture()`，JS 端生成），在盘面局部坐标中平流：
 
 ```glsl
-float phi   = atan(p.z, p.x);
-float omega = 0.55 / sqrt(max(rr, 1.0));       // 差速旋转
-float adv   = omega * uTime * uFlowSpeed * uFlowDir * 0.55;
-vec2  fuv   = vec2(phi / 6.2831853 * 8.0 - adv,
-                   log(max(rr, 1.0)) * 1.2 - uTime * 0.04 * uFlowSpeed * uFlowDir);
-float flow  = smoothstep(0.22, 0.78, mix(n1, n2, 0.5));
-d *= mix(1.0, 0.08 + 0.92 * flow, uFlow);
+float phi = atan(p.z, p.x);
+vec2 baseUv = vec2(phi / 6.2831853 * 9.0, log(max(rr, 1.0)) * 1.35);
+vec2 drift = vec2(uFlowX, uFlowY) * uTime * 0.75;
+vec2 uv1 = baseUv + drift + warp * 0.22;
+vec2 uv2 = baseUv * vec2(1.9, 1.6) + drift * 1.7 + vec2(3.7, 1.9) + warp * 0.35;
+float n = mix(texture2D(uFlowMap, uv1).r, texture2D(uFlowMap2, uv2).r, 0.42);
+float threshold = mix(0.78, 0.08, clamp(uCloudDensity, 0.0, 1.0));
+float flow = smoothstep(threshold, threshold + 0.26, n);
+d *= mix(0.04, 1.0, flow);
 ```
 
-- 角向 UV 随 `ω(r)` 前进，内圈比外圈快，形成剪切。
-- 径向漂移也乘以 `uFlowSpeed` 与 `uFlowDir`，所以速度为 0 时完全冻结，0.05 时是慢速而不是细线。
-- `uFlow` 控制空隙对比；盘内背景被压到 `0.12`，让空隙看起来是黑的。
+- **X / Y 独立平移**：`uFlowX` 绕盘方向移动，`uFlowY` 沿 `log(r)` 内外移动。两者速度不同时，云团会被拉长，产生“拉伸”的流动感。
+- **不再做差速旋转**：旧实现用 `ω(r)` 做角向平流 + 径向漂移，低速度时容易退化成同心细线；现在只做两层不同尺度的 UV 平移 + 轻微 domain warp。
+- **云层密度**：`uCloudDensity` 把噪声阈值从 0.78（稀疏云团）压到 0.08（几乎铺满），控制的是覆盖率，不是亮度。
+- 速度为 0 时云层完全冻结，不会继续漂移。
+- 盘内背景被压到 `0.12`，让空隙看起来是黑的。
 - 这是视觉平流模拟，不是 Navier–Stokes 解。
 
 ## 光子环
@@ -114,7 +118,8 @@ float ring = exp(-pow((b - 2.598) / aa, 2.0));
 | `uFalloff` | 外盘衰减指数 | 1.30 |
 | `uAbsorb` | 盘吸收 | 0.05 |
 | `uRing` | 光子环强度 | 1.2 |
-| `uFlow` / `uFlowSpeed` / `uFlowDir` | 盘面流动 | 1 / 1 / 1 |
+| `uCloudDensity` | 云层覆盖率 | 0.55 |
+| `uFlowX` / `uFlowY` | 横向 / 纵向移动速度 | 0.12 / 0.05 |
 | `uFlowMap` / `uFlowMap2` | 两张 fBm 纹理 | 运行时生成 |
 
 ## 性能

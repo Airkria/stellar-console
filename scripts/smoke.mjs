@@ -123,6 +123,21 @@ check('selected label', await evaluate('document.querySelector(".star[data-proje
 await evaluate('stellarConsole.selectProject(null)');
 check('deselected label', await evaluate('document.querySelector(".star[data-project=lyra]").dataset.selected'), 'false');
 
+check(
+  'new tune keys',
+  await evaluate('"cloudDensity" in stellarConsole.getTune() && "bgUseImage" in stellarConsole.getTune()'),
+  true,
+);
+check(
+  'panel groups',
+  await evaluate('[...document.querySelectorAll("#tuneBody .tune-group")].map((e) => e.textContent).join(",")'),
+  '黑洞,星盘,行星,辉光,星河,入流,背景,皮肤',
+);
+check('star skins', await evaluate('stellarConsole.listStarSkins().map((s) => s.value).join(",")'), 'classic,sun');
+await evaluate('stellarConsole.setStarSkin("orion", "classic")');
+await sleep(200);
+check('star skin applied', await evaluate('stellarConsole.data.projects.find((p) => p.id === "orion").starSkin'), 'classic');
+
 check('no runtime exceptions', exceptions.length, 0);
 
 console.log(JSON.stringify({ checks, exceptions }, null, 2));

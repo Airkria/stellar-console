@@ -12,6 +12,10 @@ import { createProjection } from './projection.js';
 import { createScene, BASE_DIST } from './scene.js';
 import { createTunePanel } from './tune-panel.js';
 import { createSignals } from './signals.js';
+import { createSkinState } from './skins/state.js';
+import { listPlanetSkins, listStarSkins, registerPlanetSkin, registerStarSkin } from './skins/index.js';
+
+export { listPlanetSkins, listStarSkins, registerPlanetSkin, registerStarSkin };
 
 /**
  * Create a galaxy console inside `mount`.
@@ -57,6 +61,7 @@ export function createStellarConsole({ mount, data: rawData, options = {} }) {
   app.tuning = createTuning(app);
   app.tuning.load();
   app.tune = app.tuning.tune;
+  app.skinState = createSkinState(app);
 
   app.hud = createHud(app);
   app.target = createTarget(app);
@@ -186,6 +191,19 @@ export function createStellarConsole({ mount, data: rawData, options = {} }) {
     setMotion: (on) => app.signals.setMotion(!!on),
     setDemo: (on) => app.signals.setDemo(!!on),
     resize: () => app.scene.resize(),
+
+    setStarSkin: (projectId, skin) => {
+      if (!app.skinState.setStar(projectId, skin)) return false;
+      app.scene.S.bodies?.rebuild();
+      return true;
+    },
+    setPlanetSkin: (skin) => {
+      app.skinState.setPlanet(skin);
+      app.scene.S.bodies?.rebuild();
+      return true;
+    },
+    listStarSkins,
+    listPlanetSkins,
 
     destroy: () => {
       app.scene.dispose();

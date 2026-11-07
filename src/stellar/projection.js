@@ -50,9 +50,11 @@ export function createProjection(app) {
       el.style.setProperty('--hitSize', p.core ? '300px' : Math.min(260, Math.max(46, p.halo * 0.62 * k)).toFixed(1) + 'px');
 
       const baseOpacity = p.state === 'archived' ? 0.5 : p.state === 'paused' ? 0.62 : p.state === 'idle' ? 0.82 : 1;
-      const behindHole = dist > bh.dist + 0.05;
+      // Solid occlusion: the 3D body is part of the scene and is covered by
+      // the black-hole pass, so the DOM label must fade with the same circle
+      // regardless of depth. Rotate the view to bring a hidden project out.
       const screenDist = Math.hypot(sx - bh.x, sy - bh.y);
-      const occlusion = behindHole && bh.visible ? 1 - THREE.MathUtils.smoothstep(screenDist, bh.r * 0.72, bh.r * 1.1) : 0;
+      const occlusion = bh.visible ? 1 - THREE.MathUtils.smoothstep(screenDist, bh.r * 0.72, bh.r * 1.1) : 0;
       el.style.opacity = String(baseOpacity * born * (1 - occlusion * 0.94));
       el.style.pointerEvents = occlusion > 0.55 ? 'none' : '';
 
