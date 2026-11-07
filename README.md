@@ -112,7 +112,7 @@ const consoleApp = createStellarConsole({
 | `setProjectState(id, state)` | 修改项目状态并刷新星体标签与 HUD |
 | `pushSignal({ project, text, src })` | 推送一条实时信号 |
 | `setTune(key, value)` / `getTune()` | 读写调参值（number / boolean / string） |
-| `setStarSkin(id, skin)` / `setPlanetSkin(skin)` | 切换项目恒星 / 全局行星皮肤 |
+| `setStarSkin(id, skin)` / `setPlanetSkin(skin, projectId?)` | 切换项目恒星 / 行星皮肤；省略 projectId 时改全局默认 |
 | `listStarSkins()` / `listPlanetSkins()` | 列出内置皮肤 |
 | `setMotion(on)` / `setDemo(on)` | 开关动效 / 演示信号 |
 | `resize()` | 容器尺寸变化后手动刷新 |

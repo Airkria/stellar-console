@@ -104,8 +104,8 @@ URL 一次性覆盖：
 
 恒星、行星皮肤不放在 `TUNE_DEFAULTS` 里，而是由面板「皮肤」组管理：
 
-- 每个非核心项目一个恒星皮肤下拉框（`classic` / `sun`）。
-- 一个全局行星皮肤下拉框（`rock` / `ice` / `lava`）。
+- 每个非核心项目两个下拉框：恒星皮肤（`classic` / `sun`）与行星皮肤（`rock` / `ice` / `lava`）。
+- 数据里也可以直接写 `starSkin` / `planetSkin` 作为初始值。
 
 选择写入 `localStorage` 的 `<prefix>:skins`，并通过 `setStarSkin` / `setPlanetSkin` API 重建 3D 项目本体。自定义皮肤见 [数据模型 · 皮肤](data-model.md#皮肤)。
 

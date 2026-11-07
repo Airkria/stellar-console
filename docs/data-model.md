@@ -158,7 +158,7 @@ registerPlanetSkin('crystal', {
 - 恒星：`classic`（经典恒星）、`sun`（火焰恒星）
 - 行星：`rock`（岩石）、`ice`（冰晶）、`lava`（熔岩）
 
-面板「皮肤」组会为每个非核心项目生成恒星皮肤下拉框，并提供一个全局行星皮肤下拉框；选择会写入 `localStorage`（`<prefix>:skins`），并立即重建 3D 项目本体。
+面板「皮肤」组会为每个非核心项目生成恒星与行星两个下拉框；选择会写入 `localStorage`（`<prefix>:skins`），并立即重建 3D 项目本体。
 
 `update(t, opts)` 的 `opts`：
 

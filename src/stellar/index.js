@@ -197,8 +197,8 @@ export function createStellarConsole({ mount, data: rawData, options = {} }) {
       app.scene.S.bodies?.rebuild();
       return true;
     },
-    setPlanetSkin: (skin) => {
-      app.skinState.setPlanet(skin);
+    setPlanetSkin: (skin, projectId) => {
+      if (!app.skinState.setPlanet(skin, projectId)) return false;
       app.scene.S.bodies?.rebuild();
       return true;
     },

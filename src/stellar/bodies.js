@@ -92,7 +92,7 @@ export function createBodies(app, S, refs) {
         planetGroup.position.x = orbitRadius;
         pivot.add(planetGroup);
 
-        const planetSkin = getPlanetSkin(p.planetSkin || app.skinState.state.planet);
+        const planetSkin = getPlanetSkin(app.skinState.planetFor(p));
         const planet = planetSkin.create({ app, project: p, color: planetColor, index: i });
         planetGroup.add(planet.object3D);
 

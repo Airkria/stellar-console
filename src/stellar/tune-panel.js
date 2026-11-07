@@ -19,10 +19,9 @@ export function createTunePanel(app) {
     let html = '<div class="tune-group">皮肤</div>';
     for (const project of app.data.projects) {
       if (project.core) continue;
-      const current = app.skinState.starFor(project);
-      html += `<label class="tune-row tune-select"><span>${esc(project.cn || project.name)} 恒星</span><select data-star-skin="${esc(project.id)}">${optionMarkup(stars, current)}</select></label>`;
+      html += `<label class="tune-row tune-select"><span>${esc(project.cn || project.name)} 恒星</span><select data-star-skin="${esc(project.id)}">${optionMarkup(stars, app.skinState.starFor(project))}</select></label>`;
+      html += `<label class="tune-row tune-select"><span>${esc(project.cn || project.name)} 行星</span><select data-planet-skin="${esc(project.id)}">${optionMarkup(planets, app.skinState.planetFor(project))}</select></label>`;
     }
-    html += `<label class="tune-row tune-select"><span>行星皮肤</span><select data-planet-skin>${optionMarkup(planets, app.skinState.state.planet)}</select></label>`;
     return html;
   }
 
@@ -78,10 +77,12 @@ export function createTunePanel(app) {
         app.requestRender?.();
       });
     });
-    $('#tuneBody select[data-planet-skin]')?.addEventListener('change', (e) => {
-      app.skinState.setPlanet(e.target.value);
-      app.scene.S.bodies?.rebuild();
-      app.requestRender?.();
+    $$('#tuneBody select[data-planet-skin]').forEach((select) => {
+      select.addEventListener('change', () => {
+        app.skinState.setPlanet(select.value, select.dataset.planetSkin);
+        app.scene.S.bodies?.rebuild();
+        app.requestRender?.();
+      });
     });
 
     $('#tuneToggle')?.addEventListener('click', () => setOpen(!!$('#tunePanel')?.hidden));
