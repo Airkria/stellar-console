@@ -89,6 +89,7 @@ UnrealBloomPass                    辉光（低画质时跳过）
 - `skins/index.js`：`registerStarSkin` / `registerPlanetSkin` 注册表与内置注册。
 - `skins/star/classic.js`：经典恒星球 + 光晕。
 - `skins/star/sun.js`：熔岩表面 + 高温粒子壳 + 周期性耀斑，活动强度由项目状态决定。
+- `skins/star/glow-shell.js`：Fresnel 光罩，边缘亮、中心透明，经典与太阳皮肤共用。
 - `skins/planet/rock.js` / `ice.js` / `lava.js`：不透明行星材质。
 - `bodies.js`：按 `project.starSkin` / `project.planetSkin`（或全局 `planetSkin`）创建，面板切换时重建。
 - `skins/state.js`：皮肤选择的 localStorage 持久化。
