@@ -13,5 +13,5 @@ First open-source split.
   `resize`, `destroy`.
 - Added fictional demo data (Orion / Lyra / Draco / Phoenix / HELIOS / Vega / Atlas).
 - Added README, data-model, architecture, black-hole and tuning docs.
-- Added headless smoke test (`npm run smoke`) and GitHub Pages workflow.
+- Added headless smoke test (`npm run smoke`) and a GitHub Pages workflow template (`docs/github-pages.yml`).
 - Requires a mount point and a `projects` array; everything else is optional.

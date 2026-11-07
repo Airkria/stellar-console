@@ -42,6 +42,14 @@ npm run preview
 
 要求 Node.js ≥ 20.19，浏览器需支持 WebGL2。WebGL1 环境会退回一个简化的屏幕空间黑洞。
 
+### 部署
+
+- 任意静态托管：`npm run build` 后上传 `dist/`（构建使用相对路径，可放在子目录）。
+- GitHub Pages：`docs/github-pages.yml` 是现成的部署模板。由于 `gh auth login` 默认 token 不含 `workflow` scope，模板暂放在 `docs/`：
+  1. `gh auth refresh -h github.com -s workflow`
+  2. 把 `docs/github-pages.yml` 移到 `.github/workflows/deploy.yml`
+  3. 推送到 `Main`，并在仓库 Settings → Pages 选择 GitHub Actions。
+
 ## 嵌入到自己的项目
 
 ```js
