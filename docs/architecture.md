@@ -89,7 +89,7 @@ UnrealBloomPass                    辉光（低画质时跳过）
 | `setMotion(on)` / `setDemo(on)` | 动效与演示信号 |
 | `resize()` / `destroy()` | 尺寸与销毁 |
 
-宿主选项：`options.quality`（auto/high/low）、`options.panelOpen`、
+宿主选项：`options.quality`（auto/high/low）、`options.panelOpen`、`options.motion`、
 `options.onTuneChange(change)`、`options.onAction(action, payload)`。
 `onAction` 目前由控制台头部的「讨论 / 规划」和想法输入触发。
 

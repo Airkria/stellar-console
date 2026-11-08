@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.1 — 2026-11-08
+
+- `options.motion` lets a host choose the initial motion state instead of
+  inheriting the browser's `prefers-reduced-motion`; the URL `?motion=` override
+  still wins.
+
 ## 0.7.0 — 2026-11-08
 
 - Host adapter: `pause()` / `resume()` / `isPaused()` stop the RAF loop, clock

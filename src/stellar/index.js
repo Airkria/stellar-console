@@ -114,7 +114,9 @@ export function createStellarConsole({ mount, data: rawData, options = {} }) {
   app.renderTarget(null);
   app.setFocus();
 
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduceMotion = typeof app.options.motion === 'boolean'
+    ? !app.options.motion
+    : window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   app.signals.setMotion(!reduceMotion);
   app.signals.setDemo(true);
 

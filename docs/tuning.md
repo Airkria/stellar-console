@@ -24,6 +24,7 @@ createStellarConsole({
   options: {
     quality: 'auto',          // auto | high | low
     panelOpen: false,         // 宿主默认收起调参面板
+    motion: true,             // 不传则跟随 prefers-reduced-motion
     tune: { emission: 2.4 },  // 初始值；localStorage 与 URL 仍可覆盖
     onTuneChange(change) {},  // { key, value, tune } 或 { reset: true, tune }
   },
