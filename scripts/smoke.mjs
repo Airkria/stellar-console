@@ -161,6 +161,19 @@ await sleep(250);
 check('second click opens', await evaluate('document.querySelector("#overlay").hidden'), false);
 await evaluate('stellarConsole.closeProject()');
 
+await evaluate('stellarConsole.pause()');
+check('pause stops loop', await evaluate('stellarConsole.isPaused()'), true);
+await evaluate('stellarConsole.resume()');
+check('resume restarts loop', await evaluate('stellarConsole.isPaused()'), false);
+
+const patched = await evaluate(
+  '(() => { const d = structuredClone(stellarConsole.data); const p = d.projects.find((x) => x.id === "orion"); p.goal = "UPDATED GOAL"; p.state = "wait"; return d; })()',
+);
+await evaluate(`stellarConsole.updateData(${JSON.stringify(patched)})`);
+await sleep(200);
+check('update data goal', await evaluate('stellarConsole.data.projects.find((p) => p.id === "orion").goal'), 'UPDATED GOAL');
+check('update data star', await evaluate('document.querySelector(".star[data-project=orion]").dataset.state'), 'wait');
+
 check('no runtime exceptions', exceptions.length, 0);
 
 console.log(JSON.stringify({ checks, exceptions }, null, 2));

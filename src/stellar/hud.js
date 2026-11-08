@@ -26,9 +26,19 @@ export function createHud(app) {
     timer = setInterval(tick, 1000);
   }
 
-  function dispose() {
+  function pause() {
     clearInterval(timer);
+    timer = 0;
   }
 
-  return { render, startClock, dispose };
+  function resume() {
+    startClock();
+  }
+
+  function dispose() {
+    clearInterval(timer);
+    timer = 0;
+  }
+
+  return { render, startClock, pause, resume, dispose };
 }

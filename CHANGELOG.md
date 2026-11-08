@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.7.0 — 2026-11-08
+
+- Host adapter: `pause()` / `resume()` / `isPaused()` stop the RAF loop, clock
+  and demo timer while a host view is hidden. `setMotion` no longer restarts a
+  paused scene.
+- `options.tune` supplies initial values; stored values and URL overrides still
+  work. `options.onTuneChange` reports edits and resets.
+- `options.quality` accepts `auto | high | low`; low uses DPR 1 and skips Bloom.
+- `options.onAction` receives `open-editor` / `add-idea` from the console
+  overlay. The header now exposes `讨论` and `规划` buttons; the idea input
+  routes through the host when a callback is present.
+- `updateData(data)` refreshes projects, sections, decisions and KPIs in place
+  while preserving the camera and current selection. `api.data` is now a
+  getter so it reflects the latest snapshot.
+- Added pause/resume and updateData coverage to the smoke script.
+
 ## 0.6.1 — 2026-11-08
 
 - Fixed the scene pointerup fallback still opening the console on the first

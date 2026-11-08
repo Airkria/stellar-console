@@ -76,6 +76,23 @@ UnrealBloomPass                    辉光（低画质时跳过）
 | 推送信号 | `signals.addSignal()` → LIVE 条 + 当前控制台侧栏 + 星体闪光 |
 | 调参 | `tuning.set()` → `apply()` → uniform / CSS 变量 → 重绘 |
 
+## 宿主 API（0.7.0）
+
+| 方法 | 说明 |
+| --- | --- |
+| `openProject(id)` / `closeProject()` / `selectProject(id)` | 打开控制台、关闭、选中 |
+| `setProjectState(id, state)` | 更新项目状态 |
+| `pushSignal(signal)` | 推送实时信号 |
+| `setTune(key, value)` / `getTune()` | 调参；`options.tune` 提供初始值 |
+| `pause()` / `resume()` / `isPaused()` | 真正停帧；暂停 RAF、时钟与演示定时器 |
+| `updateData(data)` | 就地刷新项目/板块/KPI，保留相机与选中 |
+| `setMotion(on)` / `setDemo(on)` | 动效与演示信号 |
+| `resize()` / `destroy()` | 尺寸与销毁 |
+
+宿主选项：`options.quality`（auto/high/low）、`options.panelOpen`、
+`options.onTuneChange(change)`、`options.onAction(action, payload)`。
+`onAction` 目前由控制台头部的「讨论 / 规划」和想法输入触发。
+
 ## 扩展点
 
 - **数据适配器**：在调用 `createStellarConsole` 之前把任意来源映射成 `data-model.md` 的结构。

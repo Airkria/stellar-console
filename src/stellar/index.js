@@ -161,10 +161,40 @@ export function createStellarConsole({ mount, data: rawData, options = {} }) {
   app.scene.renderOnce();
   app.scene.start();
 
+  /** Refresh host data in place, keeping the camera and current selection. */
+  function updateData(raw) {
+    if (!raw || !Array.isArray(raw.projects)) return false;
+    const selectedId = app.state.selected;
+    const currentId = app.state.current?.id || null;
+    const next = normalizeData(raw);
+    app.data = next;
+    app.byId = createByProject(next.projects);
+    app.state.ideas = [...next.ideas];
+    app.state.signals = [...next.signals];
+    if (selectedId && !app.byId(selectedId)) {
+      app.state.selected = null;
+      app.renderTarget(null);
+    }
+    if (currentId && !app.byId(currentId)) app.console.close();
+    app.stars.render();
+    app.scene.S.bodies?.rebuild();
+    app.hud.render();
+    app.renderTarget(app.state.selected ? app.byId(app.state.selected) : null);
+    app.setFocus();
+    if (app.state.current) app.console.open(app.state.current.id, null);
+    app.requestRender?.();
+    return true;
+  }
+
   const api = {
-    data,
+    get data() { return app.data; },
     state: app.state,
     tune: app.tuning.tune,
+
+    pause: () => app.scene.pause(),
+    resume: () => app.scene.resume(),
+    isPaused: () => app.scene.isPaused(),
+    updateData,
 
     openProject: (id) => app.console.open(id, null),
     closeProject: () => app.console.close(),

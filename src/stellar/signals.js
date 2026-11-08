@@ -4,6 +4,7 @@ import { pad2 } from './core/math.js';
 export function createSignals(app) {
   let demoTimer = 0;
   let demoIndex = 0;
+  let demoPaused = false;
 
   function toast(text) {
     const el = $('#toast');
@@ -39,11 +40,23 @@ export function createSignals(app) {
 
   function startDemo() {
     clearInterval(demoTimer);
-    if (!app.state.demo || !app.data.demoSignals.length) return;
+    demoTimer = 0;
+    if (demoPaused || !app.state.demo || !app.data.demoSignals.length) return;
     demoTimer = setInterval(() => {
       addSignal(app.data.demoSignals[demoIndex % app.data.demoSignals.length]);
       demoIndex += 1;
     }, 14000);
+  }
+
+  function pauseDemo() {
+    demoPaused = true;
+    clearInterval(demoTimer);
+    demoTimer = 0;
+  }
+
+  function resumeDemo() {
+    demoPaused = false;
+    startDemo();
   }
 
   function setMotion(on) {
@@ -55,7 +68,7 @@ export function createSignals(app) {
       const label = button.querySelector('span');
       if (label) label.textContent = on ? '开' : '关';
     }
-    app.scene?.start();
+    app.requestRender?.();
     if (app.state.current) app.console.renderFlow(app.state.current);
   }
 
@@ -77,7 +90,11 @@ export function createSignals(app) {
 
   function dispose() {
     clearInterval(demoTimer);
+    demoTimer = 0;
   }
 
-  return { toast, updateLive, addSignal, startDemo, setMotion, setDemo, bind, dispose };
+  return {
+    toast, updateLive, addSignal, startDemo, pauseDemo, resumeDemo,
+    setMotion, setDemo, bind, dispose,
+  };
 }

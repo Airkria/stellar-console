@@ -94,6 +94,8 @@ export function mountTemplate(host, data) {
           <span>里程碑 <b id="cMiles">—</b></span>
           <span>最近 <b id="cLast">—</b></span>
         </div>
+        <button class="c-discuss" id="cDiscuss" type="button">[ 讨论 ]</button>
+        <button class="c-plan" id="cPlan" type="button">[ 规划 ]</button>
         <button class="c-close" id="cClose" type="button">[ 关闭 ]</button>
       </header>
       <div class="ch-sub"><span id="cPhase"></span><span id="cAttach"></span></div>

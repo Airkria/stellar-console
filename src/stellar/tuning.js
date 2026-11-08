@@ -178,6 +178,12 @@ export function createTuning(app) {
         /* malformed URL override */
       }
     }
+    // Host-provided defaults; URL overrides above remain for local debugging.
+    if (app.options.tune && typeof app.options.tune === 'object') {
+      for (const [key, value] of Object.entries(app.options.tune)) {
+        if (key in defaults) tune[key] = value;
+      }
+    }
     for (const key of Object.keys(defaults)) {
       const fallback = defaults[key];
       if (typeof fallback === 'number') {
@@ -200,6 +206,7 @@ export function createTuning(app) {
 
   function reset() {
     Object.assign(tune, defaults);
+    app.options.onTuneChange?.({ reset: true, tune: { ...tune } });
   }
 
   function apply() {
@@ -276,6 +283,7 @@ export function createTuning(app) {
     else tune[key] = String(value);
     apply();
     save();
+    app.options.onTuneChange?.({ key, value: tune[key], tune: { ...tune } });
     return true;
   }
 
@@ -284,6 +292,7 @@ export function createTuning(app) {
     const param = new URLSearchParams(location.search).get('panel');
     if (param === '0') return false;
     if (param === '1') return true;
+    if (typeof app.options.panelOpen === 'boolean') return app.options.panelOpen;
     try {
       const current = localStorage.getItem(panelKey);
       if (current !== null) return current !== '0';

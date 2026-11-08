@@ -15,6 +15,23 @@ URL 一次性覆盖：
 ?panel=0
 ```
 
+## 宿主参数（0.7.0）
+
+```js
+createStellarConsole({
+  mount: '#app',
+  data,
+  options: {
+    quality: 'auto',          // auto | high | low
+    panelOpen: false,         // 宿主默认收起调参面板
+    tune: { emission: 2.4 },  // 初始值；localStorage 与 URL 仍可覆盖
+    onTuneChange(change) {},  // { key, value, tune } 或 { reset: true, tune }
+  },
+});
+```
+
+`quality: 'auto'` 在设备像素比大于 2 或 CPU 核数不大于 4 时选择低画质；低画质使用 DPR 1 并跳过 Bloom。
+
 ## 黑洞
 
 | 键 | 说明 | 默认 | 范围 |

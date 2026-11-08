@@ -306,6 +306,16 @@ export function createConsole(app) {
     $('#overlay')?.addEventListener('click', (e) => {
       if (e.target.closest('[data-close]')) close();
     });
+    $('#cPlan')?.addEventListener('click', () => {
+      if (app.state.current) {
+        app.options.onAction?.('open-editor', { projectId: app.state.current.id, tab: 'plan' });
+      }
+    });
+    $('#cDiscuss')?.addEventListener('click', () => {
+      if (app.state.current) {
+        app.options.onAction?.('open-editor', { projectId: app.state.current.id, tab: 'discuss' });
+      }
+    });
     document.addEventListener('keydown', onKeydown);
     $('#cDecisions')?.addEventListener('click', (e) => {
       const item = e.target.closest('.c-dec');
@@ -324,6 +334,12 @@ export function createConsole(app) {
       const input = $('#cIdeaInput');
       const text = input?.value.trim();
       if (!text || !app.state.current) return;
+      if (app.options.onAction) {
+        app.options.onAction('add-idea', { projectId: app.state.current.id, text });
+        if (input) input.value = '';
+        app.toast?.('想法已记录');
+        return;
+      }
       app.state.ideas.unshift({ project: app.state.current.name, text, time: '刚刚' });
       if (input) input.value = '';
       renderSide();

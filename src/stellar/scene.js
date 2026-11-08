@@ -30,6 +30,7 @@ export function createScene(app) {
     needsRender: true,
     raf: 0,
     low: false,
+    paused: false,
     disposed: false,
   };
   const refs = app.refs;
@@ -99,11 +100,11 @@ export function createScene(app) {
     S.VW = $('#space')?.clientWidth || window.innerWidth;
     S.VH = $('#space')?.clientHeight || window.innerHeight;
     S.DPR = Math.min(1.5, window.devicePixelRatio || 1);
-    S.low = new URLSearchParams(location.search).get('quality') === 'low';
-    if (S.low) {
-      S.DPR = 1;
-      document.documentElement.classList.add('low-quality');
-    }
+    const requestedQuality = app.options.quality || new URLSearchParams(location.search).get('quality') || 'high';
+    S.low = requestedQuality === 'low'
+      || (requestedQuality === 'auto' && ((window.devicePixelRatio || 1) > 2 || (navigator.hardwareConcurrency || 8) <= 4));
+    if (S.low) S.DPR = 1;
+    document.documentElement.classList.toggle('low-quality', S.low);
     refs.DPR = S.DPR;
 
     try {
@@ -194,7 +195,7 @@ export function createScene(app) {
   }
 
   function frame() {
-    if (S.disposed) return;
+    if (S.disposed || S.paused) return;
     const dt = Math.min(0.05, S.clock.getDelta());
     const now = performance.now();
 
@@ -225,9 +226,28 @@ export function createScene(app) {
 
   function start() {
     cancelAnimationFrame(S.raf);
+    S.paused = false;
     S.needsRender = true;
-    S.clock.start();
+    S.clock?.start();
     S.raf = requestAnimationFrame(frame);
+  }
+
+  /** Stop the RAF loop and timers while the host view is hidden. */
+  function pause() {
+    if (S.disposed || S.paused) return;
+    S.paused = true;
+    cancelAnimationFrame(S.raf);
+    S.raf = 0;
+    S.clock?.stop();
+    app.hud?.pause?.();
+    app.signals?.pauseDemo?.();
+  }
+
+  function resume() {
+    if (S.disposed || !S.paused) return;
+    app.hud?.resume?.();
+    app.signals?.resumeDemo?.();
+    start();
   }
 
   function requestRender() {
@@ -353,5 +373,9 @@ export function createScene(app) {
     bgTexture = null;
   }
 
-  return { S, setup, setupControls, start, requestRender, renderOnce, resize, dispose, applyBackground };
+  return {
+    S, setup, setupControls, start, pause, resume,
+    isPaused: () => S.paused,
+    requestRender, renderOnce, resize, dispose, applyBackground,
+  };
 }
